@@ -17,6 +17,37 @@ A behavioral draft you didn't measure is a claim you didn't verify. After drafti
 deterministic instruction-following (declare the decision and reasoning, then skip). Default to
 measuring; the skip is a narrow, announced exception, not an escape hatch.
 
+## Validation checklist
+
+Use your persistent task tracker — one task per item. Works for authoring a new skill or
+auditing an existing one — copy it into your tracker before you start, then work through the
+rest of this skill against it.
+
+**Draft:**
+- [ ] Name uses only lowercase letters, numbers, hyphens
+- [ ] Frontmatter has `name` and `description` (under 1024 chars total)
+- [ ] Description starts with "Use when…", is third person, includes triggers/symptoms, and
+      contains NO workflow summary
+- [ ] Body keeps to one excellent example per concept; no narrative-of-one-session content
+- [ ] Heavy reference (100+ lines) and reusable tools live in separate files; principles inline
+- [ ] Flowcharts only for non-obvious decisions/loops/branches; semantic labels, no code
+- [ ] Any checklist sits near the top of the body, before the procedural sections it gates
+- [ ] Body is lean (≤200 lines preferred, 500 max)
+
+**Validate** (handoff to `slow-powers:evaluating-skills`):
+- [ ] Decide whether the change is behavior-shaping or deterministic, and announce the decision
+      and reasoning (see "Choosing to test with evals"). Default to behavior-shaping when unsure.
+- [ ] If behavior-shaping (or the user opts in): author `evals/evals.json` with 2–3 realistic
+      prompts
+- [ ] For discipline-enforcing skills, write pressure prompts combining multiple pressures, plus
+      at least one **seeded** case (embeds a prior transcript) alongside a cold contrast case
+- [ ] Run the eval. Iterate until the with-skill pass rate is materially higher than baseline.
+
+**Deploy:**
+- [ ] Commit the skill (and its `evals/evals.json`, when authored) together
+- [ ] In the PR, include before/after eval results — or, for a deterministic change, the stated
+      decision and reasoning to skip
+
 ## What is a skill?
 
 A skill is a reusable reference guide for a proven technique, pattern, or tool — **not** a
@@ -250,37 +281,6 @@ The mid-session rationalizations that belong here surface most reliably from *se
 — ones that embed a prior transcript so the agent meets the rule already committed to skipping
 it. See `slow-powers:evaluating-skills` (`pressure-scenarios.md` and "Seeding conversation
 context") for the pressure taxonomy.
-
-## Validation checklist
-
-Use your persistent task tracker — one task per item. Works for authoring a new skill or
-auditing an existing one.
-
-**Draft:**
-- [ ] Name uses only lowercase letters, numbers, hyphens
-- [ ] Frontmatter has `name` and `description` (under 1024 chars total)
-- [ ] Description starts with "Use when…", is third person, includes triggers/symptoms, and
-      contains NO workflow summary
-- [ ] Body keeps to one excellent example per concept; no narrative-of-one-session content
-- [ ] Heavy reference (100+ lines) and reusable tools live in separate files; principles inline
-- [ ] Flowcharts only for non-obvious decisions/loops/branches; semantic labels, no code
-- [ ] Cross-references use `slow-powers:<skill-name>`, not file paths or `@` imports
-- [ ] Any checklist sits near the top of the body, before the procedural sections it gates
-- [ ] Body is lean (≤200 lines preferred, 500 max)
-
-**Validate** (handoff to `slow-powers:evaluating-skills`):
-- [ ] Decide whether the change is behavior-shaping or deterministic, and announce the decision
-      and reasoning (see "Choosing to test with evals"). Default to behavior-shaping when unsure.
-- [ ] If behavior-shaping (or the user opts in): author `evals/evals.json` with 2–3 realistic
-      prompts
-- [ ] For discipline-enforcing skills, write pressure prompts combining multiple pressures, plus
-      at least one **seeded** case (embeds a prior transcript) alongside a cold contrast case
-- [ ] Run the eval. Iterate until the with-skill pass rate is materially higher than baseline.
-
-**Deploy:**
-- [ ] Commit the skill (and its `evals/evals.json`, when authored) together
-- [ ] In the PR, include before/after eval results — or, for a deterministic change, the stated
-      decision and reasoning to skip (per repo CLAUDE.md)
 
 ## Further reading
 
