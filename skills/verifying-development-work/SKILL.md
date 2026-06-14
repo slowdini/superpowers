@@ -46,6 +46,8 @@ The Gate Function is your discipline at *every* completion claim — each "fixed
 
 Current-session evidence can count. Do **not** rerun a passing check merely because this skill loaded after you already ran the right command and nothing behavior-changing happened afterward. Do rerun when the evidence is inherited, stale, incomplete, or separated from the returned code by later behavior changes.
 
+**Unverifiable Claims:** Some claims may not be verifiable - you don't have access to the necessary output, it requires visual review and you lack that kind of reference, and so on. If you cannot verify a claim, clearly state so, and describe to the user what manual verification steps they need to take.
+
 ---
 
 ## Core Verification Types
