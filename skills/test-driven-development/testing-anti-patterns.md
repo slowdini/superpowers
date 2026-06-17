@@ -29,8 +29,6 @@ test('renders sidebar', () => {
 
 **Why this is wrong:** You're verifying the mock works, not the component. The test passes when the mock is present and fails when it's not — it tells you nothing about real behavior.
 
-**your human partner's correction:** "Are we testing the behavior of a mock?"
-
 **The fix:**
 ```typescript
 // ✅ GOOD: Test real component or don't mock it
@@ -153,7 +151,7 @@ const mockResponse = {
 "Ready for testing"
 ```
 
-Testing is part of implementation, not an optional follow-up — you can't claim complete without tests, and TDD would have caught this. Write the failing test first; see `SKILL.md` for the cycle.
+Testing is part of implementation, not an optional follow-up — you can't claim complete without tests, and TDD would have caught this. Write the failing test first; see `./SKILL.md` for the cycle.
 
 ## Anti-Pattern 6: Order-Dependent Mocks and Assertions
 
@@ -172,8 +170,6 @@ expect(lastCall[1]).toMatchObject({ page: 2 });
 ```
 
 **Why this is wrong:** The code under test doesn't *guarantee* it calls the dependency exactly twice, in this order — retries, cache refetches/revalidation, re-renders, and effects firing on mount can add or reorder calls. When an extra call appears, the `Once` queue runs dry and the next real call gets the mock's default — usually `undefined` — which cascades into an error or empty state that looks like a product bug. Reading "the last call" or "call N" assumes that call is the one you care about, but an unmodeled refetch makes the assertion read the wrong one. The result is a test that passes or fails on timing — flaky. It's the same footgun in any framework: Sinon `onCall(n)`, a Python `side_effect=[...]` list, consecutive Mockito `thenReturn(a, b)`.
-
-**your human partner's correction:** "Does the code guarantee this dependency is called exactly this many times, in this order? If not, your stub can't assume it."
 
 **The fix:**
 ```typescript
@@ -196,8 +192,6 @@ When this footgun surfaces as a flaky CI failure, see the `slow-powers:investiga
 ## When Mocks Become Too Complex
 
 **Warning signs:** mock setup longer than the test logic, mocking everything to make the test pass, mocks missing methods the real components have, or tests that break when the mock changes.
-
-**your human partner's question:** "Do we need to be using a mock here?"
 
 **Consider:** integration tests with real components are often simpler than complex mocks.
 
