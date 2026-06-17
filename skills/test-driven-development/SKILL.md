@@ -24,6 +24,8 @@ Write production code before the test? Delete it. Start over. Do not keep it for
 1. **RED — Write a Failing Test:**
    * Write one minimal, focused test showing what the behavior *should* do.
    * Use real code and real inputs; avoid mocks unless absolutely unavoidable.
+     When you must mock, or are tempted to add a test-only method to production
+     code, read `testing-anti-patterns.md` in this directory first.
 2. **Verify RED — Watch It Fail:**
    * Run the test command: `npm test` / `pytest` / `go test`.
    * **MANDATORY:** Verify it fails for the expected reason (e.g., function not defined, value incorrect), not due to a typo or build error.
