@@ -1,10 +1,10 @@
 # Slow-powers
 
-Slow-powers is an agent skill set for professional software development. It enhances plan mode and debugging work, enforces best practices, and works _with_ the features of modern agents, instead of replacing them. It's a plugin for people who don't install plugins.
+Slow-powers is an agent skill set for professional software development. It enhances plan mode and debugging work, enforces best practices, and works _with_ the features of modern agents, instead of replacing them. It's the plugin for people who don't install plugins.
 
 ## About this fork
 
-Slow-powers is a fork of [obra/superpowers](https://github.com/obra/superpowers). Much of the skill content is sourced from upstream, with rewrites focusing on clarity, token efficiency, and enhancing instead of replacing plan mode.
+Slow-powers is a fork of [obra/superpowers](https://github.com/obra/superpowers). Much of the skill content is sourced from upstream, with rewrites focusing on clarity, token efficiency, and providing a generally lighter touch.
 
 ## Quickstart
 
@@ -12,7 +12,7 @@ Slow-powers is a fork of [obra/superpowers](https://github.com/obra/superpowers)
 
 ## How it works
 
-Slow-powers is designed to improve the actual day-to-day work of software developers working with agents. It instructs agents to check for skills first, and use the ones that apply. The shipped skills fill real gaps in agentic development, but all discoverable skills benefit from the skill-enforcing guidance.
+Slow-powers is designed to improve the actual day-to-day work of software developers using agents for anything from focused debugging to generating entire features. It instructs agents to check for skills first, and use the ones that apply. The shipped skills fill real gaps in agentic development, but all discoverable skills benefit from the skill-enforcing guidance. Combined with the provided skill-writing and testing guidance, this allows you to extend your workflow with your own verified-to-be-useful skills.
 
 ### Start in plan mode
 
@@ -20,11 +20,11 @@ Even small features are developed better with a plan. Slow-powers hardens the pl
 
 ### Debugging
 
-Slow-powers guides agents through an evidence-backed, no-guess debugging approach. No "It works now!" without proof.
+Slow-powers guides agents through an evidence-backed, no-guess debugging approach. No "It works now!" without proof. There's also special guidance for specific, tricky-to-debug situations, generated from real-world cases.
 
 ### Writing skills
 
-Skills for writing skills! Slow-powers skills are all written and evaluated following the same guidelines and processes it ships. Back up your own skills with real stats, and understand their cost in time and tokens.
+Skills for writing skills! Slow-powers skills are all written and evaluated following the same guidelines and processes it ships. Back up your own skills with real stats, and understand their cost in time and tokens, so you can develop custom workflows when needed.
 
 Skill evaluations are powered by [eval-magic](https://github.com/slowdini/eval-magic)
 
@@ -120,15 +120,6 @@ Releases are cut from `dev` and tagged from `main`:
    Notes come from the release PR body, or auto-generated if empty.
 
 See `.github/workflows/` for the workflow definitions.
-
-### Required secrets
-
-Only one secret is needed. Configure it in **Settings → Secrets and variables →
-Actions**:
-
-| Secret | Type | Used by | Scope / permissions |
-|--------|------|---------|---------------------|
-| `RELEASE_PR_TOKEN` | GitHub PAT (fine-grained or classic) | `release-pr.yml` | Push to `dev` (Contents: write) and open PRs (Pull requests: write). Required so the release PR triggers CI — PRs opened by the default `GITHUB_TOKEN` do not. |
 
 ## License
 
