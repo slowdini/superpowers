@@ -1,17 +1,17 @@
 # Testing Anti-Patterns
 
-**Load this reference when:** writing or changing tests, adding mocks, or tempted to add test-only methods to production code.
+**Load this reference when:** a test you're writing or changing matches one of the anti-patterns below — the `test-driven-development` SKILL's "Testing anti-patterns" table points here — or any time you're adding mocks or other test scaffolding. Each anti-pattern carries a **Gate**: check it before you commit the test.
 
 ## Overview
 
-Tests must verify real behavior, not mock behavior. Mocks are a means to isolate, not the thing being tested.
+This is a catalog of recurring testing anti-patterns — the ways a test stops verifying real behavior, or quietly couples itself to test scaffolding instead of the code under test. Mocks are the most common source (anti-patterns 1, 3, 4, and 6 all involve them), but not the only one: test-only methods leak into production (2), and tests get bolted on after the fact (5).
 
-**Core principle:** Test what the code does, not what the mocks do. If TDD reveals you're testing mock behavior, you've gone wrong — test real behavior, or question why you're mocking at all.
+**Core principle:** Test what the code does, not what your test scaffolding does. If a test passes because of how a mock, fixture, or helper is set up — rather than what the code under test actually does — it's verifying the wrong thing.
 
 ## The Iron Laws
 
 ```
-1. NEVER test mock behavior
+1. Test real behavior, NEVER test scaffolding (mocks, fixtures, helpers)
 2. NEVER add test-only methods to production classes
 3. NEVER mock without understanding dependencies
 ```
@@ -198,18 +198,6 @@ When this footgun surfaces as a flaky CI failure, see the `slow-powers:investiga
 ## TDD Prevents These Anti-Patterns
 
 Writing the test first forces you to think about what you're actually testing; watching it fail confirms it tests real behavior, not mocks; a minimal implementation keeps test-only methods from creeping in; and using real dependencies shows you what the test actually needs before you mock. If you're testing mock behavior, you added mocks without watching the test fail against real code first — you violated TDD.
-
-## Quick Reference
-
-| Anti-Pattern | Fix |
-|--------------|-----|
-| Assert on mock elements | Test real component or unmock it |
-| Test-only methods in production | Move to test utilities |
-| Mock without understanding | Understand dependencies first, mock minimally |
-| Incomplete mocks | Mirror real API completely |
-| Tests as afterthought | TDD - tests first |
-| Order-dependent mocks/assertions | Stub by input; assert a matching call happened, not call N |
-| Over-complex mocks | Consider integration tests |
 
 ## Red Flags
 

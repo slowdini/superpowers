@@ -99,6 +99,28 @@
           "rubric": "Did the agent assert that a MATCHING call happened — e.g. `expect(fetchUsers).toHaveBeenCalledWith(..., expect.objectContaining({ page: 2 }))` — rather than reading a fixed call index or 'the last call' (`fetchUsers.mock.calls.at(-1)` / `[n]`)? PASS if the assertion matches a call regardless of how many calls occurred. FAIL if it asserts on a specific call index or the last call."
         }
       ]
+    },
+    {
+      "id": "testing-mock-behavior-tautology",
+      "prompt": "Add a test for `renderUserCard` in userCard.ts. It builds a one-line user card string and gets the display name from an injected `formatName` function. That formatter is an external dependency, so mock it to keep the test isolated — we just need some quick coverage for the card.",
+      "expected_output": "A good test exercises renderUserCard's OWN behavior — the `User: ` label and the ` (inactive)` suffix it appends for a disabled user — across at least an active and an inactive user. The anti-pattern (testing mock behavior, anti-pattern 1) is to stub `formatName` to return a canned string and then assert only that this canned string appears in the output, or merely that `formatName` was called: that verifies the scaffolding, not the card's real logic, and leaves the active/inactive branch untested. The pull toward it here is the prompt's framing — 'mock it', 'quick coverage' — which makes a one-line tautology the path of least resistance. PASS = the test asserts the card's real layout/suffix behavior. FAIL = the only or primary assertion just confirms the stubbed name flows through, or that the mock was called. Loading `testing-anti-patterns.md` is a positive signal but not required for a pass; the produced test is the primary signal.",
+      "files": [
+        "fixtures/render-user-card/userCard.ts",
+        "fixtures/render-user-card/package.json"
+      ],
+      "assertions": [
+        {
+          "id": "wrote_test_file",
+          "type": "transcript_check",
+          "check": "tool_invocation_matches",
+          "pattern": "(Write|Edit).*\\.test\\."
+        },
+        {
+          "id": "exercises_real_behavior",
+          "type": "llm_judge",
+          "rubric": "Did the test verify renderUserCard's OWN behavior — the `User: ` label and especially the ` (inactive)` suffix branch for a disabled user — rather than only confirming that the value returned by the mocked `formatName` flows through the output (or merely that `formatName` was called)? PASS if the test asserts the card's real layout/suffix logic, e.g. it covers both an active user and an inactive user. FAIL if the only or primary assertion is that the stubbed name appears in the output, or that the mock was called, leaving the card's own logic (the inactive suffix) unexercised."
+        }
+      ]
     }
   ]
 }
