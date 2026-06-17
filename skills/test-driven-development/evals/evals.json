@@ -72,6 +72,33 @@
           "rubric": "Did the agent surface that writing a test after the implementation already exists is weaker than test-first (a tests-after test tends to encode what the code currently does rather than what it should do), instead of silently producing a rubber-stamp test? PASS if the limitation is acknowledged or the discipline is recommended. FAIL if the agent just writes a trivial confirming test with no such acknowledgment."
         }
       ]
+    },
+    {
+      "id": "seeded-order-dependent-mock-momentum",
+      "prompt": "[The following is the conversation so far in this session. You are the assistant; continue from the final user turn.]\n\nUser: Add a test for `UserListController.init()` in userList.ts — it should load page 1 on init. We're moving fast on this admin dashboard.\n\nAssistant: Done — added `userList.test.ts`:\n\n```ts\nimport { expect, mock, test } from \"bun:test\";\nimport { UserListController } from \"./userList\";\n\ntest(\"init loads page 1\", async () => {\n  const fetchUsers = mock().mockResolvedValueOnce([{ id: \"u1\", name: \"Ada\" }]);\n  const list = new UserListController(\"org-1\", fetchUsers);\n  await list.init();\n  expect(fetchUsers.mock.calls.at(-1)?.[1]).toEqual({ page: 1 });\n});\n```\n\nUser: Great, that's the pattern. Now add one right below it for navigation: after init, calling `goToPage(2)` should fetch page 2. Same style — queue up the mock returns with `.mockResolvedValueOnce(...)` and check the last call. Just bang it out, it's a tiny test.",
+      "expected_output": "The agent writes the navigation test but does NOT copy the order-dependent-queue style the seed pushes. `goToPage` lazily runs `init()` (a page-1 fetch) when the list isn't initialized, so the number of times `fetchUsers` is called isn't fixed — a `.mockResolvedValueOnce(...)` queue can run dry (the next real call returns the mock's `undefined` default) and a `calls.at(-1)` assertion can read the wrong call. The correct test stubs `fetchUsers` by INPUT (return a value for any matching call, e.g. keyed on the `page` param, never falling through to `undefined`) and asserts a MATCHING call happened (`toHaveBeenCalledWith` / `objectContaining({ page: 2 })`) rather than reading a fixed call index. This is a seeded realism probe: the prior turn establishes an order-dependent `mockResolvedValueOnce` + last-call style the user calls 'the pattern' and asks to repeat under momentum. The failure mode is matching the seeded style (a queue of `Once` returns + `calls.at(-1)`). A text seed approximates but cannot inject real mid-session state, so a pass is a stronger-than-cold signal, not ground truth; see 'Seeding conversation context (and its ceiling)' in evaluating-skills. skill_should_trigger stays true.",
+      "files": [
+        "fixtures/paginated-fetch/userList.ts",
+        "fixtures/paginated-fetch/package.json"
+      ],
+      "assertions": [
+        {
+          "id": "wrote_test_file",
+          "type": "transcript_check",
+          "check": "tool_invocation_matches",
+          "pattern": "(Write|Edit).*\\.test\\."
+        },
+        {
+          "id": "stubbed_by_input",
+          "type": "llm_judge",
+          "rubric": "Did the agent stub `fetchUsers` by INPUT — e.g. a `mockImplementation` that returns a value for any matching call (keyed on the page argument), never falling through to `undefined` — rather than an order-dependent `.mockResolvedValueOnce(...)` queue keyed on call order? PASS if the stub is robust to the dependency being called a different number of times or in a different order. FAIL if it used an order-dependent `...Once` queue that runs dry when the call count differs."
+        },
+        {
+          "id": "asserted_by_matching",
+          "type": "llm_judge",
+          "rubric": "Did the agent assert that a MATCHING call happened — e.g. `expect(fetchUsers).toHaveBeenCalledWith(..., expect.objectContaining({ page: 2 }))` — rather than reading a fixed call index or 'the last call' (`fetchUsers.mock.calls.at(-1)` / `[n]`)? PASS if the assertion matches a call regardless of how many calls occurred. FAIL if it asserts on a specific call index or the last call."
+        }
+      ]
     }
   ]
 }
