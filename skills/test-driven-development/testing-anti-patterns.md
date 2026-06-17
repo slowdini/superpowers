@@ -155,6 +155,44 @@ const mockResponse = {
 
 Testing is part of implementation, not an optional follow-up — you can't claim complete without tests, and TDD would have caught this. Write the failing test first; see `SKILL.md` for the cycle.
 
+## Anti-Pattern 6: Order-Dependent Mocks and Assertions
+
+**The violation:**
+```typescript
+// ❌ BAD: a queue of return values keyed on call order
+fetchUser
+  .mockResolvedValueOnce(firstResult)
+  .mockResolvedValueOnce(secondResult);
+
+await renderComponent(); // may refetch, retry, or re-render — call count isn't fixed
+
+// ...and an assertion that reads a specific call:
+const lastCall = fetchUser.mock.calls.at(-1);
+expect(lastCall[1]).toMatchObject({ page: 2 });
+```
+
+**Why this is wrong:** The code under test doesn't *guarantee* it calls the dependency exactly twice, in this order — retries, cache refetches/revalidation, re-renders, and effects firing on mount can add or reorder calls. When an extra call appears, the `Once` queue runs dry and the next real call gets the mock's default — usually `undefined` — which cascades into an error or empty state that looks like a product bug. Reading "the last call" or "call N" assumes that call is the one you care about, but an unmodeled refetch makes the assertion read the wrong one. The result is a test that passes or fails on timing — flaky. It's the same footgun in any framework: Sinon `onCall(n)`, a Python `side_effect=[...]` list, consecutive Mockito `thenReturn(a, b)`.
+
+**your human partner's correction:** "Does the code guarantee this dependency is called exactly this many times, in this order? If not, your stub can't assume it."
+
+**The fix:**
+```typescript
+// ✅ GOOD: stub by INPUT, never fall through to undefined
+fetchUser.mockImplementation((_id, params) =>
+  params?.page === 2 ? secondResult : firstResult
+);
+
+// ✅ GOOD: assert a matching call HAPPENED, not a fixed index
+expect(fetchUser).toHaveBeenCalledWith(
+  expect.anything(),
+  expect.objectContaining({ page: 2 })
+);
+```
+
+**Gate:** Before using a `...Once` queue, a per-call-index stub, or a "last call / call N" assertion, ask "Can the code under test call this a different number of times, or in a different order, than I expect?" (retries? cache refetch/revalidation? re-render? effect on mount? parallelism?) If yes — or you're unsure — stub by input: return the right value for any matching call and a sensible default for the rest, never letting the stub return `undefined` for a value the code consumes; and assert by matching (`toHaveBeenCalledWith` / `objectContaining`), not by index. Also reduce non-determinism at the source: in tests, disable retries and background revalidation, and control timers, so the call count is predictable.
+
+When this footgun surfaces as a flaky CI failure, see the `slow-powers:investigating-bugs` skill (`diagnosing-flaky-tests.md`) for how to diagnose it.
+
 ## When Mocks Become Too Complex
 
 **Warning signs:** mock setup longer than the test logic, mocking everything to make the test pass, mocks missing methods the real components have, or tests that break when the mock changes.
@@ -176,6 +214,7 @@ Writing the test first forces you to think about what you're actually testing; w
 | Mock without understanding | Understand dependencies first, mock minimally |
 | Incomplete mocks | Mirror real API completely |
 | Tests as afterthought | TDD - tests first |
+| Order-dependent mocks/assertions | Stub by input; assert a matching call happened, not call N |
 | Over-complex mocks | Consider integration tests |
 
 ## Red Flags
@@ -186,3 +225,6 @@ Writing the test first forces you to think about what you're actually testing; w
 - Test fails when you remove mock
 - Can't explain why mock is needed
 - Mocking "just to be safe" or before understanding the dependency chain
+- `mockReturnValueOnce`/`mockResolvedValueOnce` chains against code that can retry, refetch, or re-render
+- Asserting on "the last call" or a fixed call index
+- A mocked data function that can return `undefined` when its queue runs dry
