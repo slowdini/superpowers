@@ -90,8 +90,6 @@ While writing or changing a test, check it against this table. If a row matches,
 
 ## Common Rationalizations
 
-> **Note:** The rationalizations below are prospective — they represent likely excuses an agent might produce under pressure, but they have not yet been validated through actual eval runs. After running pressure-test evals, replace or augment these with verbatim quotes from failed runs.
-
 | Excuse | Reality |
 |--------|---------|
 | "This is too simple to test" | Simple code breaks. Test takes 30 seconds. |
@@ -104,8 +102,6 @@ While writing or changing a test, check it against this table. If a row matches,
 ---
 
 ## Red Flags — STOP and start over
-
-> **Note:** The red flags below are prospective — they represent likely warning signs, but they have not yet been validated through actual eval runs.
 
 - Code before test
 - "I already manually tested it"
