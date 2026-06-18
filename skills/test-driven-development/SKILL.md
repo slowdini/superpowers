@@ -24,6 +24,9 @@ Write production code before the test? Delete it. Start over. Do not keep it for
 1. **RED — Write a Failing Test:**
    * Write one minimal, focused test showing what the behavior *should* do.
    * Use real code and real inputs; avoid mocks unless absolutely unavoidable.
+     Before committing a test, scan it against the **Testing anti-patterns**
+     table below; if it matches a row, read the named section of
+     `./testing-anti-patterns.md` first.
 2. **Verify RED — Watch It Fail:**
    * Run the test command: `npm test` / `pytest` / `go test`.
    * **MANDATORY:** Verify it fails for the expected reason (e.g., function not defined, value incorrect), not due to a typo or build error.
@@ -69,9 +72,23 @@ test('retry works', async () => {
 
 ---
 
-## Common Rationalizations
+## Testing anti-patterns — scan before you commit a test
 
-> **Note:** The rationalizations below are prospective — they represent likely excuses an agent might produce under pressure, but they have not yet been validated through actual eval runs. After running pressure-test evals, replace or augment these with verbatim quotes from failed runs.
+While writing or changing a test, check it against this table. If a row matches, read the named section of `./testing-anti-patterns.md` before moving on — mocks are the most common source of these, but not the only one.
+
+| If your test… | Anti-pattern | Section to read |
+|---|---|---|
+| asserts on a mock / `*-mock` element instead of real output | testing mock behavior | *Testing Mock Behavior* |
+| needs a method on a production class that only tests call | test-only methods in production | *Test-Only Methods in Production* |
+| mocks a method without knowing its side effects | mocking without understanding | *Mocking Without Understanding* |
+| uses a mock with only the fields you happen to need | incomplete mocks | *Incomplete Mocks* |
+| is written after the implementation, with no failing test first | tests as afterthought | *Tests as Afterthought* |
+| stubs by call order (`...Once` chains) or asserts "call N" / "the last call" | order-dependent mocks/assertions | *Order-Dependent Mocks and Assertions* |
+| has more mock setup than test logic | over-complex mocks | *When Mocks Become Too Complex* |
+
+---
+
+## Common Rationalizations
 
 | Excuse | Reality |
 |--------|---------|
@@ -85,8 +102,6 @@ test('retry works', async () => {
 ---
 
 ## Red Flags — STOP and start over
-
-> **Note:** The red flags below are prospective — they represent likely warning signs, but they have not yet been validated through actual eval runs.
 
 - Code before test
 - "I already manually tested it"

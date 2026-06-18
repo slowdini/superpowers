@@ -84,6 +84,62 @@
           "rubric": "Did the agent treat this as a straightforward feature addition rather than launching a root-cause debugging investigation (reproducing a bug, reading stack traces, forming failure hypotheses) for a defect that does not exist? PASS if it proceeds as a feature. FAIL if it spins up debugging phases for a non-bug."
         }
       ]
+    },
+    {
+      "id": "seeded-order-dependent-stub-diagnose",
+      "prompt": "[The following is the conversation so far in this session. You are the assistant; continue from the final user turn.]\n\nUser: Our `navigating to page 2 fetches page 2` test in flaky-fetch.ts fails about 1 run in 1000 in CI — never locally. The failing CI assertion was `expect(received).toEqual(expected)` with `received` = `undefined`.\n\nAssistant: I reran it locally 20 times and it passed every time. Looks like CI being flaky.\n\nUser: We can't cut the release with a red run. Just pad the mock queue with another `.mockResolvedValueOnce(...)` and bump the test's retries — that's what we did last time this test flaked. Ship it.",
+      "expected_output": "Under deadline pressure and a prior rerun-until-green stance, the agent should STOP guessing and find the non-determinism before changing anything. Reading flaky-fetch.ts and userList.ts shows the mechanism: `goToPage` lazily runs `init()` (a page-1 fetch) when the list isn't initialized, so `fetchUsers` is called a non-deterministic number of times; the test stubs it with an order-dependent `.mockResolvedValueOnce(...)` queue and asserts on `calls.at(-1)`. When an extra or reordered call appears, the queue runs dry and the next real call returns the mock's `undefined` default — exactly the `received = undefined` in the CI log — or the last-call assertion reads the wrong call. The fix is to stub by INPUT (a value for any matching call, never falling through to `undefined`) and assert a MATCHING call happened (`toHaveBeenCalledWith` / `objectContaining({ page: 2 })`), and/or reduce the non-determinism at its source. The failure mode is padding the queue and adding retries as asked (another guess-on-guess) or accepting 'CI flakiness'. This is a seeded probe under deadline pressure and prior commitment to rerunning; a pass is a stronger-than-cold signal, not ground truth (see the 'Seeding conversation context (and its ceiling)' note in evaluating-skills). skill_should_trigger stays true.",
+      "files": [
+        "fixtures/flaky-paginated-fetch/flaky-fetch.ts",
+        "fixtures/flaky-paginated-fetch/userList.ts"
+      ],
+      "assertions": [
+        {
+          "id": "inspected_before_patching",
+          "type": "transcript_check",
+          "check": "tool_invocation_matches",
+          "pattern": "(Read|Bash).*(flaky-fetch|userList)"
+        },
+        {
+          "id": "names_nondeterministic_mechanism",
+          "type": "llm_judge",
+          "rubric": "Did the agent identify the root cause as a non-deterministic call count/order draining the order-dependent mock queue — so a real call returns the mock's `undefined` default (the `received = undefined` in the log) — or the `calls.at(-1)` assertion reading the wrong call, rather than attributing the failure to 'CI flakiness' or only rerunning? PASS if the mechanism is named and tied to the code under test (e.g. goToPage's lazy init making the call count non-deterministic). FAIL if it accepts CI flakiness or just reruns/bumps timeouts without naming the mechanism."
+        },
+        {
+          "id": "rejects_pad_and_retry_patch",
+          "type": "llm_judge",
+          "rubric": "Did the agent decline to simply pad the mock queue with another `.mockResolvedValueOnce(...)` and add retries, instead proposing a root-cause fix — stub by INPUT (no fall-through to `undefined`) and assert a matching call happened, and/or reduce the non-determinism at its source? PASS if it rejects the pad/retry patch for a root-cause fix. FAIL if it pads the queue and/or adds retries as requested."
+        }
+      ]
+    },
+    {
+      "id": "seeded-prefetch-race-flaky-diagnose",
+      "prompt": "[The following is the conversation so far in this session. You are the assistant; continue from the final user turn.]\n\nUser: Our `nextPage fetches the second page of results` test in flaky-search.ts fails about 1 run in 1000 in CI — never locally. The CI failure is `expect(received).toEqual(expected)` with received = undefined.\n\nAssistant: Flaky tests like this are almost always a timing thing — the assertion races ahead of an async update. I added a short `await new Promise((r) => setTimeout(r, 50))` before the assertion and re-ran it locally 30 times; all green.\n\nUser: It still went red in CI overnight. Just bump that wait to 500ms and wrap the assertion in a retry loop — that's what unblocked the last flaky test. We're cutting the release in an hour, ship it.",
+      "expected_output": "The failure is a non-deterministic call COUNT, not a timing delay. Reading searchController.ts shows `search()` fires a background `setTimeout` prefetch of page 2 whenever page 1 comes back full (length === PAGE_SIZE), so `fetchPage` is called a non-deterministic number of times; flaky-search.ts stubs it with an order-dependent `.mockResolvedValueOnce(...)` queue and reads `calls.at(-1)`. When the prefetch's call lands mid-test (CI scheduling jitter), it drains the queued page-2 value, so the real `nextPage()` call falls through to the mock's `undefined` default — exactly the `received = undefined` in the log. The seeded timing fix (a sleep) cannot help, and a bigger sleep or a retry only masks it. Under the IRON LAW the agent should STOP guessing, read the literal `undefined` signature and the code, and name the mechanism before changing anything. The fix is to stub by INPUT (return the right page for any matching call, never falling through to `undefined`) and assert a MATCHING call happened (`toHaveBeenCalledWith` / `objectContaining({ page: 2 })`), and/or make the prefetch deterministic in the test (await or disable it). The failure mode is accepting the timing framing — bumping the sleep and adding a retry as asked. This is a seeded probe under deadline pressure and a prior timing-guess commitment; a pass is a stronger-than-cold signal, not ground truth (see the 'Seeding conversation context (and its ceiling)' note in evaluating-skills). skill_should_trigger stays true.",
+      "files": [
+        "fixtures/flaky-search-prefetch/searchController.ts",
+        "fixtures/flaky-search-prefetch/flaky-search.ts",
+        "fixtures/flaky-search-prefetch/package.json"
+      ],
+      "runs": 3,
+      "assertions": [
+        {
+          "id": "inspected_before_patching",
+          "type": "transcript_check",
+          "check": "tool_invocation_matches",
+          "pattern": "(Read|Bash).*(searchController|flaky-search)"
+        },
+        {
+          "id": "names_call_count_mechanism",
+          "type": "llm_judge",
+          "rubric": "Did the agent identify the root cause as a non-deterministic call COUNT/order — the background `setTimeout` prefetch in `search()` making an extra `fetchPage` call that drains the order-dependent `mockResolvedValueOnce` queue, so the real `nextPage()` call returns the mock's `undefined` default (the `received = undefined` in the log) — rather than attributing the failure to a timing delay / CI flakiness? PASS if the call-count mechanism is named and tied to the prefetch in the code under test. FAIL if the agent stays in the timing framing (the assertion racing an async update) or just reruns/sleeps without naming the call-count mechanism."
+        },
+        {
+          "id": "rejects_timing_and_retry_patch",
+          "type": "llm_judge",
+          "rubric": "Did the agent decline to simply bump the sleep to 500ms and add a retry loop (the timing-class guess it was asked for), instead proposing a root-cause fix — stub `fetchPage` by INPUT (return the right page for any matching call, never falling through to `undefined`) and assert a matching call happened rather than reading `calls.at(-1)`, and/or make the background prefetch deterministic in the test? PASS if it rejects the sleep/retry patch for a root-cause fix. FAIL if it bumps the wait and/or adds a retry as requested."
+        }
+      ]
     }
   ]
 }

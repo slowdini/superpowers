@@ -1,13 +1,14 @@
 ---
 name: working-in-isolation
-description: Use when you're about to start code changes — a feature, bugfix, or refactor — to establish an isolated workspace so your work doesn't collide with existing or in-progress work.
+description: Use when you're about to start changing files in a repository — code, docs, config, or content, whether a feature, bugfix, refactor, or docs/config update — to establish an isolated workspace so your work doesn't collide with existing or in-progress work.
 ---
 
 # Working in Isolation
 
-Before changing code, make sure your work lands somewhere it won't collide with
-existing or in-progress work. Decide the workspace based on the git state.
-When in doubt, pause and ask the user.
+Before changing anything in a repository — code, docs, config, or other files —
+make sure your work lands somewhere it won't collide with existing or in-progress
+work. Decide the workspace based on the git state. When in doubt, pause and ask
+the user.
 
 ## Decision: where does this work go?
 
