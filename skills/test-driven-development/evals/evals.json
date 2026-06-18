@@ -17,7 +17,7 @@
           "id": "ran_tests",
           "type": "transcript_check",
           "check": "tool_invocation_matches",
-          "pattern": "bun (test|run test)"
+          "pattern": "(bun (run )?test|node .*--test|deno test|(npm|pnpm|yarn) (run )?test|(npx |bunx )?(vitest|jest))"
         },
         {
           "id": "test_before_implementation",
@@ -47,7 +47,7 @@
           "id": "ran_tests",
           "type": "transcript_check",
           "check": "tool_invocation_matches",
-          "pattern": "bun (test|run test)"
+          "pattern": "(bun (run )?test|node .*--test|deno test|(npm|pnpm|yarn) (run )?test|(npx |bunx )?(vitest|jest))"
         },
         {
           "id": "test_before_implementation",
@@ -81,6 +81,7 @@
         "fixtures/paginated-fetch/userList.ts",
         "fixtures/paginated-fetch/package.json"
       ],
+      "runs": 3,
       "assertions": [
         {
           "id": "wrote_test_file",
@@ -108,6 +109,7 @@
         "fixtures/render-user-card/userCard.ts",
         "fixtures/render-user-card/package.json"
       ],
+      "runs": 3,
       "assertions": [
         {
           "id": "wrote_test_file",
@@ -119,6 +121,35 @@
           "id": "exercises_real_behavior",
           "type": "llm_judge",
           "rubric": "Did the test verify renderUserCard's OWN behavior — the `User: ` label and especially the ` (inactive)` suffix branch for a disabled user — rather than only confirming that the value returned by the mocked `formatName` flows through the output (or merely that `formatName` was called)? PASS if the test asserts the card's real layout/suffix logic, e.g. it covers both an active user and an inactive user. FAIL if the only or primary assertion is that the stubbed name appears in the output, or that the mock was called, leaving the card's own logic (the inactive suffix) unexercised."
+        }
+      ]
+    },
+    {
+      "id": "helper-tautology-formatmoney",
+      "prompt": "Add tests for `formatMoney(cents)` in formatMoney.ts — it formats an integer number of cents as a dollar string (e.g. 1234 -> \"$12.34\"). There's an `expectedMoney` helper in test-utils.ts we already use elsewhere to build the expected strings; use it to keep these quick — we just need some coverage before the release cut.",
+      "expected_output": "A good test asserts formatMoney's real output against independent, concrete literal expected strings across representative cases — e.g. 1234 -> \"$12.34\", 5 -> \"$0.05\" (zero-padding), 0 -> \"$0.00\", a negative like -99 -> \"-$0.99\" — so a wrong implementation would be caught. The anti-pattern (testing scaffolding, not the code) is to assert `expect(formatMoney(c)).toBe(expectedMoney(c))`: the `expectedMoney` helper re-derives the value with the same arithmetic, so the assertion holds by construction even if formatMoney is broken — it verifies the helper, not the function. The pull toward it is the prompt's nudge to reuse the helper 'to keep these quick'. PASS = the test's primary assertions compare formatMoney's output to independent literal strings. FAIL = the only or primary assertions compare formatMoney(x) to expectedMoney(x) (or any helper/fixture that recomputes the same value). Loading testing-anti-patterns.md is a positive signal but not required; the produced test is the primary signal.",
+      "files": [
+        "fixtures/helper-tautology/formatMoney.ts",
+        "fixtures/helper-tautology/test-utils.ts",
+        "fixtures/helper-tautology/package.json"
+      ],
+      "runs": 3,
+      "assertions": [
+        {
+          "id": "wrote_test_file",
+          "type": "transcript_check",
+          "check": "tool_invocation_matches",
+          "pattern": "(Write|Edit).*\\.test\\."
+        },
+        {
+          "id": "asserts_literal_not_helper",
+          "type": "llm_judge",
+          "rubric": "Did the test assert formatMoney's output against independent, concrete literal expected strings (e.g. `expect(formatMoney(1234)).toBe(\"$12.34\")`) rather than against the value returned by the `expectedMoney` helper (or any helper/fixture that recomputes the same formatting)? PASS if the primary expected values are independent literals that would fail a wrong implementation. FAIL if the only or primary assertions compare formatMoney(x) to expectedMoney(x) — a tautology that passes by construction because the helper shares the function's logic."
+        },
+        {
+          "id": "covers_padding_branch",
+          "type": "llm_judge",
+          "rubric": "Did the test exercise formatMoney's own formatting across more than one representative case — at least a sub-dollar amount that forces zero-padding (e.g. 5 -> \"$0.05\") plus a normal multi-dollar amount (e.g. 1234 -> \"$12.34\") — rather than a single happy-path assertion? PASS if padding/edge behavior is covered with concrete expectations. FAIL if only one trivial case is checked."
         }
       ]
     }

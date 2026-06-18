@@ -4,6 +4,36 @@ Author-maintained companion to the baseline. Not provenance (see `BASELINE.md`)
 and not results (see `benchmark.json`). These are observations for whoever
 iterates next.
 
+## This baseline — iteration-2 (Mode B revision; #234/#236 validation)
+
+Promoted from the **iteration-2** tightening run: a Mode B (revision) measurement of
+#234 (Anti-Pattern 6 / order-dependent mocks) and #236 (testing-anti-patterns
+refocus). Old arm = `95431b5` (pre-both-PRs), new arm = current content. Sonnet 4.6
+agent + judge, full 6-case suite, clean validity (100% skill-invocation per arm, 0
+stray writes / live-source reads, 0 validity warnings).
+
+**Headline: revision +0.167** (old 0.833 / new 1.0, n=12, new stddev 0). The entire
+gap is `seeded-order-dependent-mock-momentum` (old 0.333/cell → new 1.0/cell, stable
+across all 3 runs) — #234's Anti-Pattern 6 earning its keep. The two #236-scope
+tautology cases (`testing-mock-behavior-tautology`, `helper-tautology-formatmoney`)
+ceiled at 1.0/1.0 (no-regression; base Sonnet already avoids the tautology) — a
+measurement ceiling on a capable base model, not a content failure.
+
+**Per-case gradings intentionally omitted (tooling gap).** `benchmark.json` is the
+complete aggregate (it reads every one of the 12 cells). The per-case `grading/*.json`
+files are NOT committed: `eval-magic promote-baseline` 0.3.0 silently drops gradings
+for cases with `runs > 1` (it doesn't walk the nested `run-<k>/grading.json` layout),
+so promoting would commit an inconsistent 3-of-6 record missing the headline case.
+Tracked as **slowdini/eval-magic#70**. Full per-cell gradings live in the (gitignored)
+workspace `skills-workspace/test-driven-development/iteration-2/`; re-promote with
+gradings once the tool handles `runs > 1`.
+
+---
+
+_The sections below are carried over from the prior baseline (the bootstrap
+capability→gate-wrapping A/B). They predate the eval-runner → `eval-magic` rename and
+some specifics are stale, but the forward-looking ideas remain relevant._
+
 ## The `seeded-mid-implementation-momentum` case and what it can't yet measure
 
 `seeded-mid-implementation-momentum` was added (per the CLAUDE.md directive that
