@@ -14,11 +14,15 @@ Flakiness is the gap between the two.
 
 Work these in order, before proposing a fix:
 
-1. **Classify: infra vs. test-code vs. product.** Run the test three ways: (a) locally in
+1. **Classify: infra vs. test-code vs. product.** Run the test several ways: (a) locally in
    isolation, repeated 10–50×; (b) under CPU/IO load (saturate cores); (c) via the *exact* CI
    command — coverage instrumentation and parallel workers change timing and are often what tips
-   a latent race over the edge. Passes in isolation but fails under load or only in CI ⇒
-   non-determinism in the test or product, **not** infra.
+   a latent race over the edge; (d) in varied order and in-suite — run the whole file/suite,
+   shuffle the seed, run it after its neighbors, not just alone. A test that is deterministic in
+   isolation but flips with **execution context** (order, neighbor-test state, in-suite vs. alone)
+   is flaky on state leaked across tests, not on rerun-to-rerun chance — so "I reran it and it
+   passed" clears nothing; vary order and context. Passes in isolation but fails under load, in a
+   particular order, or only in CI ⇒ non-determinism in the test or product, **not** infra.
 2. **Read the failure's literal signature before theorizing.** The error usually names the
    mechanism:
    * A value that "can never be undefined/null" *is* → a stub ran out of queued values, or an
@@ -45,6 +49,7 @@ Work these in order, before proposing a fix:
 |---|---|---|
 | Timing guesses (arbitrary `sleep`/`setTimeout`) | Passes fast, fails under load/CI; fixed-delay waits in the test | `condition-based-waiting.md` |
 | Non-deterministic call count/order vs. order-dependent stubs/assertions | A mocked function returns `undefined`/its default mid-test; an assertion reads "the last call" / "call N" and gets the wrong one | "Non-deterministic call count/order" (below) + the `slow-powers:test-driven-development` skill (`testing-anti-patterns.md`) → *Order-Dependent Mocks and Assertions* |
+| Cross-test state pollution | Passes alone, fails in-suite or under a particular order — depends on a neighbor test's leftover state | reset/isolate shared state per test (mocks, module/global singletons, DB, fake timers); make setup/teardown order-independent |
 
 ### Non-deterministic call count / order
 
