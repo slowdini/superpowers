@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/logo.png" alt="Slow-powers" width="200" />
+</p>
+
 # Slow-powers
 
 Slow-powers is an agent skill set for professional software development. It enhances plan mode and debugging work, enforces best practices, and works _with_ the features of modern agents, instead of replacing them. It's the plugin for people who don't install plugins.
