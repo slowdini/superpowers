@@ -2,6 +2,12 @@
   <img src="assets/logo.png" alt="Slow-powers" width="200" />
 </p>
 
+<p align="center">
+  <a href="#why-trust-these-skills"><img
+    src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fslowdini%2Fslow-powers%2Fdev%2F.github%2Fbadges%2Fevals.json"
+    alt="evals" /></a>
+</p>
+
 # Slow-powers
 
 Slow-powers is an agent skill set for professional software development. It enhances plan mode and debugging work, enforces best practices, and works _with_ the features of modern agents, instead of replacing them. It's the plugin for people who don't install plugins.
@@ -79,6 +85,19 @@ Slow-powers provides a set of highly focused skills that ensure your agent opera
 5. **`verifying-development-work`** — Requires running actual test/build commands and presenting concrete evidence before any success claim, with a final review pass over the change, code AND comments, before work is handed back.
 6. **`writing-skills`** — Helps write and edit skills, following the same best practices that guide slow-powers itself.
 7. **`evaluating-skills`** — Teaches the agent how to run skill evals, so the value of skills and prose changes can be objectively assessed.
+
+## Why trust these skills?
+
+Most skill packs ship on vibes. Every slow-powers skill ships with a documented eval — or it doesn't ship (see [Philosophy](#philosophy)). Each skill is measured against an agent with **no skill**, so the number means "this skill made the agent better," not just "we changed something."
+
+| Skill | Improvement vs no skill | n | Model | Last measured |
+|---|---|---|---|---|
+| `hardening-plans` | TBD | TBD | TBD | TBD |
+| `investigating-bugs` | TBD | TBD | TBD | TBD |
+| `test-driven-development` | TBD | TBD | TBD | TBD |
+| `verifying-development-work` | TBD | TBD | TBD | TBD |
+
+**Improvement vs no skill** is the gain in eval pass-rate (percentage points) when the same [eval-magic](https://github.com/slowdini/eval-magic) suite runs with the skill versus without it.
 
 ## Intended Workflows
 
