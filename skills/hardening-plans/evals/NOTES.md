@@ -45,6 +45,10 @@ truth. See "Seeding conversation context (and its ceiling)" in `evaluating-skill
 
 ## Baseline status
 
-`baseline/` reflects the **old** 8-case Mode B suite (plan-mode off) and is stale against
-this consolidated, plan-mode-on suite. Re-run and `promote-baseline` to refresh it; the
-old `BASELINE.md`/`NOTES.md` are kept for provenance until then.
+`baseline/` holds the **Mode A** (skill-vs-no-skill) result for this consolidated,
+plan-mode-on suite: `claude-sonnet-4-6`, N=5, n=15/condition, **+22.2pp** with the
+skill (iteration-2, 2026-06-24). See `baseline/NOTES.md` for the per-assertion
+breakdown and caveats. Regenerate with the documented invocation above plus
+`--runs 5`, then `eval-magic promote-baseline --mode new-skill --overwrite`. Note:
+on a mode switch, `promote-baseline` leaves the prior mode's `grading/*.json`
+orphaned and retains the prior `BASELINE.md`/`NOTES.md` — clean those by hand.
