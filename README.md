@@ -3,6 +3,18 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/slowdini/slow-powers/actions/workflows/ci.yml"><img
+    src="https://img.shields.io/github/actions/workflow/status/slowdini/slow-powers/ci.yml?branch=main"
+    alt="CI status" /></a>
+  <a href="https://github.com/slowdini/slow-powers/releases/latest"><img
+    src="https://img.shields.io/github/v/release/slowdini/slow-powers"
+    alt="Latest release" /></a>
+  <a href="https://www.npmjs.com/package/@slowdini/slow-powers-opencode"><img
+    src="https://img.shields.io/npm/v/@slowdini/slow-powers-opencode"
+    alt="OpenCode plugin on npm" /></a>
+  <a href="./LICENSE"><img
+    src="https://img.shields.io/github/license/slowdini/slow-powers"
+    alt="License: MIT" /></a>
   <a href="#why-trust-these-skills"><img
     src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fslowdini%2Fslow-powers%2Fdev%2F.github%2Fbadges%2Fevals.json"
     alt="evals" /></a>
