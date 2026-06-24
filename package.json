@@ -49,6 +49,7 @@
     "evals:grade": "eval-magic grade --skill-dir ./skills",
     "evals:aggregate": "eval-magic aggregate --skill-dir ./skills",
     "evals:promote-baseline": "eval-magic promote-baseline --skill-dir ./skills",
+    "demo": "vhs assets/demo/tdd.tape",
     "check": "biome check --write .",
     "check:ci": "biome check --error-on-warnings .",
     "typecheck": "tsc --noEmit",
