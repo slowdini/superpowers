@@ -1,79 +1,80 @@
-# Notes — hardening-plans next-step baseline (iteration-2)
+# Notes — hardening-plans Mode A baseline (iteration-2)
 
 Forward-looking observations from the run that produced this baseline. Read these
 before trusting the headline `benchmark.json` aggregate.
 
 ## What this baseline measures
 
-Revision (Mode B), sonnet agent + sonnet judge, 8 cases, N=1 per case/condition:
+Mode A (`new-skill`, **with_skill vs. without_skill**), `claude-sonnet-4-6` agent +
+judge, `--plan-mode` **on**, 3 cases × **N=5** runs per condition (n=15 per
+condition). This is the clean skill-vs-no-skill measurement for the README "why
+trust these skills?" table — it replaces the prior Mode B (revision) baseline,
+which measured a *language edit* (#188 named-hand-off), not the skill's value over
+baseline.
 
-- **`old_skill` = `next-step-v1`** (commit `b62c4cd`): the next-step *flowchart*
-  (functional → TDD, non-mechanical/non-functional → working-in-isolation,
-  informational/trivial → no skill) **without** an explicit instruction to emit a
-  *named* hand-off.
-- **`new_skill`** (commit `7dc77dd`): same flowchart **plus** "close your hand-off
-  by naming the required next skill verbatim, even on a cold draft", the canonical
-  "You must complete … next" cross-references, and a red-flag + rationalization
-  closing the spirit-vs-letter loophole.
+The suite is run with `--skill-dir ./skills`, so the `without_skill` arm still
+carries the **other six slow-powers skills** — "no skill" here means
+**hardening-plans absent**, not a bare agent. The discriminating signal (below) is
+behavior only hardening-plans produces, so the delta is cleanly attributable to it;
+but a README headline should read "vs an agent **without this skill**," not "vs a
+bare agent."
 
-This is the **second** iteration of the issue #188 work. Iteration-1 compared the
-flowchart (`b62c4cd`) against the *pre-flowchart* single-TDD-gate (`dev`); see the
-"iteration-1 context" section below for why iteration-2 exists.
+## Headline
 
-## Headline: clean sweep, but read the flakiness caveat
+`with_skill` **0.80** vs `without_skill` **0.578** → **delta +0.222 (+22.2pp)**.
+Skill invoked **15/15** (rate 1.0, code-checked from transcripts — incl. the
+adversarial "skills are redundant" seed). `missing_gradings: 0`, no
+`validity_warnings`, no stray writes / live-source reads. `with_skill` costs ~+45s
+and ~+28k tokens per run.
 
-`new_skill` passed **8/8 cases, stddev 0** (100%) vs `old_skill` **87.5%**
-(delta **+12.5pp** toward new). Both arms invoked the skill 100%; no
-`validity_warnings`. `new_skill` also used slightly fewer tokens on average.
+## Where the delta comes from (per assertion, with / without)
 
-The two `old_skill` misses were the noisy fresh-eyes assertions, not routing:
-`seeded-plan-mode-todo-app-adversarial/no_placeholders` and
-`oauth-task-breakdown-cold/hands_off_to_tdd`. `new_skill` passed both — the
-strengthened "You must complete … next" phrasing plausibly firmed up the
-functional TDD hand-off too — but at N=1 these are within run-to-run noise.
+| Case · assertion | with | without | Δ |
+|---|---|---|---|
+| seeded-review · **catches_hallucinated_file** | 5/5 | **0/5** | **+1.00** |
+| seeded-review · catches_name_inconsistency | 5/5 | 3/5 | +0.40 |
+| oauth-cold · no_placeholders | 2/5 | 1/5 | +0.20 |
+| seeded-review · catches_irrelevant_step | 5/5 | 5/5 | 0.00 (ceiled) |
+| seeded-adversarial · no_placeholders | 5/5 | 5/5 | 0.00 (ceiled) |
 
-## The structural-refactor-cold caveat (the important one)
+**The marquee result** is `catches_hallucinated_file`: the baseline *never* catches
+the unconfirmed `src/hooks/useLocalStorage.ts` reference (0/5); the skill *always*
+does (5/5). That is precisely the skill's stated "most important check," and it
+carries most of the aggregate delta.
 
-`structural-refactor-cold` is the case the iteration-2 edit targeted, and it is
-**flaky at N=1**. The `routes_to_working_in_isolation` assertion on the
-*identical* `b62c4cd` content flipped across runs:
+## Caveats to read before re-using these numbers
 
-| skill content | run | routes_to_working_in_isolation |
-|---|---|---|
-| `b62c4cd` (no named-hand-off line) | iteration-1 `new_skill` | **FAIL** (gave generic "set up an isolated branch" advice, never named the skill) |
-| `b62c4cd` (no named-hand-off line) | iteration-2 `old_skill` | **PASS** (named the skill on its own) |
-| `7dc77dd` (named-hand-off line)    | iteration-2 `new_skill` | **PASS** (explicit "REQUIRED NEXT SKILL: `slow-powers:working-in-isolation`") |
+- **Two ceilinged assertions** (`catches_irrelevant_step`, seeded-adversarial
+  `no_placeholders`) pass 5/5 in *both* arms — they no longer discriminate. The
+  baseline already questions the irrelevant Redux step and already avoids
+  placeholders on the adversarial case. Replace or harden these before the next
+  iteration if you want them to earn their signal.
+- **oauth `no_placeholders` is weak even with the skill (2/5).** The 3 misses are
+  honest and consistent: with no provider named in the prompt, the agent left
+  `<provider>` / `<PROVIDER>_CLIENT_ID` template tokens, which the (strict) judge
+  counts as placeholders. The 2 passes surfaced the provider as a *named
+  assumption* instead — the skill's "decide it now" behavior. So the skill helps
+  here (+0.20) but doesn't cleanly win; consider whether the rubric should accept a
+  declared-assumption form, or whether the prompt should name a provider.
+- **N=5 keeps stddev high** (with 0.40, without 0.41) because per-run pass-rate is
+  coarse (1–3 assertions per case). The aggregate delta is stable, but per-cell
+  rates are best read as the fraction table above, not as continuous values.
 
-So this single run does **not** cleanly attribute the cold-structural pass to the
-edit: `old_skill` happened to pass it too. What the run *does* show is that
-`new_skill` is **≥ `old_skill` on every case, swept 8/8 with zero variance, and
-emitted the named hand-off on the cold draft** — with no regressions. Treat the
-+12.5pp as "at least as good, and reliably named" rather than proof the edit beats
-v1 *specifically on the flaky case*. **If you revisit this, replicate
-`structural-refactor-cold` a few times per condition** (the runner has no per-case
-run multiplier — use repeated `--only structural-refactor-cold` iterations) to
-firm up the attribution.
+## Run friction (eval-magic, hybrid + --guard)
 
-## Iteration-1 context (why iteration-2 exists)
-
-Iteration-1 (`dev` single-TDD-gate vs `b62c4cd` flowchart) showed the flowchart's
-**clean win on the seeded #188 case**: `docs-refactor-plan-mode` — old talked
-itself out of isolation (the audited #188 bug), new routed to
-`slow-powers:working-in-isolation`. But it also exposed the gap this baseline
-closes: on the **cold** `structural-refactor-cold` draft, the flowchart produced
-isolation advice *in spirit* without *naming* the skill, failing the assertion.
-That gap motivated the named-hand-off edit measured here.
-
-## Noisy assertions to distrust at N=1
-
-`no_placeholders` and `hands_off_to_tdd` scatter PASS/FAIL across both conditions
-run-to-run; they are fresh-eyes/quality checks, not tests of the routing change.
-Don't read a single-run flip on either as signal. The routing assertions
-(`routes_to_working_in_isolation`, `does_not_force_tdd`, `no_forced_next_skill`)
-are the ones this baseline exists to track.
+Driven via `--run-mode hybrid` (orchestrated from a prep session shelling
+`claude -p` per task). The generated dispatch recipes point `claude -p` at prompt
+/ response paths **outside** its cwd/sandbox (`dispatch_prompt_path` is a sibling
+of the env; judge prompt+response live under the iteration dir), which a guarded,
+non-interactive dispatch cannot read/write. Worked around without changing what the
+agent/judge sees: copy each agent prompt into its in-sandbox `outputs_dir`; run
+judges from the iteration-dir cwd. A failed-read dispatch still exits 0 and emits a
+result, so **smoke-test one dispatch and inspect before the full batch.** Filed
+upstream with eval-magic.
 
 ## Provenance / scope
 
-8-case full suite. Plan-mode injection **off** (the seeded cases carry plan
-framing in prose; the `*-cold` and research cases are deliberately cold). Agent +
-judge both `claude-sonnet-4-6`.
+iteration-2, mode `new-skill`, harness claude-code, run-mode hybrid, agent + judge
+both `claude-sonnet-4-6`, run 2026-06-24, label `hardening-plans-mode-a-baseline`.
+3-case consolidated suite (`oauth-task-breakdown-cold`,
+`seeded-review-catches-defects`, `seeded-adversarial-todo-app`); `--plan-mode` on.
