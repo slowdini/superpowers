@@ -12,6 +12,16 @@
 
 Slow-powers is an agent skill set for professional software development. It enhances plan mode and debugging work, enforces best practices, and works _with_ the features of modern agents, instead of replacing them. It's the plugin for people who don't install plugins.
 
+<p align="center">
+  <img src="assets/demo/tdd-demo.gif"
+    alt="The test-driven-development skill in a coding agent: write a failing test, watch it fail for the right reason, write minimal code — and the test catches a race before it ships."
+    width="760" />
+</p>
+
+<p align="center">
+  <sub>The <code>test-driven-development</code> skill catching a race before it ships. Terminal themed with <a href="https://github.com/samiamorwas/synthpunk">Synthpunk Neon Dark</a>.</sub>
+</p>
+
 ## About this fork
 
 Slow-powers is a fork of [obra/superpowers](https://github.com/obra/superpowers). Much of the skill content is sourced from upstream, with rewrites focusing on clarity, token efficiency, and providing a generally lighter touch.
