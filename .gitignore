@@ -1,12 +1,7 @@
 .worktrees/
-.private-journal/
 # Ignore local Claude Code state, but track the shared, committed settings.
 .claude/*
 !.claude/settings.json
 .DS_Store
 node_modules/
-inspo
-triage/
-# Ephemeral eval run output. Curated baselines are promoted into
-# skills/<skill>/evals/baseline/ (tracked) via `bun run evals:promote-baseline`.
-skills-workspace/
+.eval-magic

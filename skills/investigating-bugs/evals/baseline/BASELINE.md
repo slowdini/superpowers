@@ -1,23 +1,24 @@
 # Baseline — investigating-bugs
 
-Committed reference output from a canonical eval run. Regenerate with
-`eval-magic promote-baseline --skill investigating-bugs --iteration <N>` after aggregating. The ephemeral workspace (run records, timing,
-dispatch files, produced outputs) stays gitignored under `skills-workspace/`
-and is reclaimable by `eval-magic teardown` once promoted (this commit's marker).
+**Status: PENDING (no promoted baseline).**
 
-| Field | Value |
-|-------|-------|
-| Mode | new-skill |
-| Iteration | iteration-1 |
-| Harness | claude-code |
-| Agent model | unspecified |
-| Judge model | unspecified |
-| Conditions | with_skill, without_skill |
-| Run timestamp | 2026-06-11T04:22:46.590Z |
-| Label | issue-207 rename + pressure validation (Mode A, sonnet-4-6) |
-| Promoted from commit | 37289e4 |
+The eval suite was rebuilt from scratch (slim, de-scaffolded, outcome-graded — see
+`evals.json`). The previous baseline measured the legacy 6-case suite, which ceiled
+(with_skill 1.00 vs without_skill 0.967, +3.3pp on Sonnet 4.6), so its `benchmark.json`
+and `grading/` were removed rather than left to mislead.
 
-Files:
-- `benchmark.json` — aggregate pass-rate / duration / token deltas.
-- `grading/<eval-id>__<condition>.json` — per-run assertion results and judge rationales.
+No baseline is committed for the new suite yet. Per the Iron Law in
+`slow-powers:evaluating-skills`, do not promote one until a fresh Mode A run shows a
+positive delta. To regenerate:
 
+```
+eval-magic run --skill-dir ./skills --skill investigating-bugs --bootstrap ./bootstrap.md --runs 5
+# ...read the per-assertion deltas, iterate if needed, then:
+eval-magic promote-baseline --skill-dir ./skills --skill investigating-bugs --mode new-skill --overwrite
+```
+
+Target model for the headline: **Sonnet 4.6** (agent + judge). Present the
+`evaluating-skills` pre-flight summary and arm `--guard` before dispatching.
+
+Once promoted, this file is overwritten with the run metadata table, and
+`benchmark.json` / `grading/<eval-id>__<condition>.json` are written alongside it.
