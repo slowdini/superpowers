@@ -66,8 +66,4 @@ error/empty state — or the indexed assertion reads the wrong call. Both depend
 or an assertion that received a plausible-but-wrong value (the value from a *different* call than
 the one intended).
 
-**Fix (prevention):** the `slow-powers:test-driven-development` skill's
-[testing anti-patterns reference](../../test-driven-development/references/testing-anti-patterns.md)
-→ *Order-Dependent Mocks and Assertions*. In short: stub by **input** (return the right value for
-any matching call, a sensible default otherwise, never fall through to `undefined`), and assert a
-matching call **happened** rather than reading a fixed index.
+**Fix (prevention):** the `slow-powers:test-driven-development` skill's [testing anti-patterns reference](../../test-driven-development/references/testing-anti-patterns.md) → *Order-Dependent Mocks and Assertions*. In short: stub by **input** (return the right value for any matching call, a sensible default otherwise, never fall through to `undefined`), and assert a matching call **happened** rather than reading a fixed index.

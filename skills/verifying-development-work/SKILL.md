@@ -17,13 +17,7 @@ Claiming work is complete without verification is an assumption, not a fact. Han
 
 When you believe the work itself is done, run these finishing phases **in order**. Review comes first so any fixes happen before the evidence you hand back; verification comes next so the claim covers the returned code; integration choices come last because they belong to the user.
 
-1. **Review and fix the diff** — follow the
-   [code-review reference](references/code-review.md), including its comment-hygiene checks.
-   Review catches what running can't: silent regressions, missed edge cases, leftover debug code,
-   noisy comments, reuse or simplification. Fix or flag each finding. Once behavior-changing fixes
-   are done, the code is frozen. A small diff never exempts this phase: review depth is sized
-   *inside* the reference ("Size the review to the change") — a small change means a small review,
-   never no review.
+1. **Review and fix the diff** — follow the [code-review reference](references/code-review.md), including its comment-hygiene checks. Review catches what running can't: silent regressions, missed edge cases, leftover debug code, noisy comments, reuse or simplification. Fix or flag each finding. Once behavior-changing fixes are done, the code is frozen. A small diff never exempts this phase: review depth is sized *inside* the reference ("Size the review to the change") — a small change means a small review, never no review.
 2. **Establish final verification evidence** — apply the Gate Function (below) to the frozen code. If you already have qualifying current-session evidence and the review made no behavior-changing edits after it, reuse it and present that output. Otherwise run the command fresh and present that output.
 3. **Surface integration options** — state that the work is reviewed and verified, then offer the user choices such as merge, push/open PR, leave as-is, or discard. Do not choose for them.
 
@@ -118,10 +112,8 @@ Verified, reviewed work is still *your* checkpoint, not a decision to merge. Int
 - About to write "committed", "pushed", "shipped", or "deployed" — did you actually run that command this session? Asserting an action that never happened is fabrication, the worst failure in this skill's domain
 - Echoing a "tests pass" claim you did not directly observe in the primary session
 - "Verification passed, so I'm done" — tests ran, but no review pass over the diff; that violates the Iron Law's second clause
-- About to hand back a diff without having read the
-  [code-review reference](references/code-review.md) this session
-- About to hand back a file your change grew past 500 lines without a long-file review or a
-  declared exception (per the [long-file reference](references/long-files.md))
+- About to hand back a diff without having read the [code-review reference](references/code-review.md) this session
+- About to hand back a file your change grew past 500 lines without a long-file review or a declared exception (per the [long-file reference](references/long-files.md))
 - About to rerun an already-qualifying check just to satisfy ceremony
 - About to merge, push, or discard without asking — or without qualifying verification evidence first
 

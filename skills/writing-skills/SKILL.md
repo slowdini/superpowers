@@ -29,8 +29,7 @@ rest of this skill against it.
 - [ ] Description starts with "Use when…", is third person, includes triggers/symptoms, and
       contains NO workflow summary
 - [ ] Body keeps to one excellent example per concept; no narrative-of-one-session content
-- [ ] Companion files use the correct directory from "Skill directory layout"; principles stay
-      inline
+- [ ] Companion files use the correct directory from "Skill directory layout"; principles stay inline
 - [ ] Flowcharts only for non-obvious decisions/loops/branches; semantic labels, no code
 - [ ] Any checklist sits near the top of the body, before the procedural sections it gates
 - [ ] Body is lean (≤200 lines preferred, 500 max)
@@ -228,8 +227,7 @@ pair.
 
 Use progressive disclosure for anything heavy: SKILL.md is the always-loaded overview; bulky
 material lives in separate files the agent loads on demand. Tell the agent *when* to load each
-("Read `references/api-errors.md` if the API returns non-200") rather than a generic "see
-references/".
+("Read `references/api-errors.md` if the API returns non-200") rather than a generic "see references/".
 
 ### Skill directory layout
 
@@ -242,11 +240,7 @@ A skill always has `SKILL.md`. Add any of these peer directories when their cont
 | `assets/` | Templates, images, schemas, and static data | Use them as inputs or output resources; explain when the workflow needs them. |
 | `evals/` | Eval cases, fixtures, grading artifacts, and baselines | Keep `evals.json` and its supporting evaluation material together. |
 
-Make every companion file reachable from `SKILL.md` through local links. A link in `SKILL.md` is
-relative to the skill root (`references/guide.md`, `scripts/check.sh`, `assets/template.md`,
-`evals/evals.json`); links inside companion files are relative to the file containing the link.
-Keep primary resources one level below the skill root. A secondary resource may be one more hop
-away when it is useful only after reading the primary resource; avoid deeper discovery chains.
+Make every companion file reachable from `SKILL.md` through local links. A link in `SKILL.md` is relative to the skill root (`references/guide.md`, `scripts/check.sh`, `assets/template.md`, `evals/evals.json`); links inside companion files are relative to the file containing the link. Keep primary resources one level below the skill root. A secondary resource may be one more hop away when it is useful only after reading the primary resource; avoid deeper discovery chains.
 
 ```text
 skill-name/
@@ -257,17 +251,14 @@ skill-name/
 └── evals/
 ```
 
-Create companion files when they serve one of the roles above, not merely to shorten `SKILL.md`.
-Principles, concepts, and short code patterns stay inline.
+Create companion files when they serve one of the roles above, not merely to shorten `SKILL.md`. Principles, concepts, and short code patterns stay inline.
 
 ## Rationalization-proofing for discipline skills
 
 Skills that enforce discipline (TDD, verifying-development-work, designing-before-coding)
 must survive pressure — agents find loopholes under time, sunk-cost, or authority pressure.
 Drafting an enforceable rule differs from drafting a guideline. The research backs this up:
-persuasion techniques more than double LLM compliance under pressure. See the
-[persuasion principles](references/persuasion-principles.md) for the seven principles, when each
-applies, and citations (Cialdini, 2021; Meincke et al., 2025).
+persuasion techniques more than double LLM compliance under pressure. See the [persuasion principles](references/persuasion-principles.md) for the seven principles, when each applies, and citations (Cialdini, 2021; Meincke et al., 2025).
 
 **Close every loophole explicitly.** State the rule, then forbid the specific workarounds you
 can predict — the agent will reach for the ambiguity under pressure.
@@ -300,15 +291,12 @@ them verbatim and bake them back in:
 
 The mid-session rationalizations that belong here surface most reliably from *seeded* eval cases
 — ones that embed a prior transcript so the agent meets the rule already committed to skipping
-it. See `slow-powers:evaluating-skills` ("Seeding conversation context") and its
-[pressure-scenarios reference](../evaluating-skills/references/pressure-scenarios.md) for the
-pressure taxonomy.
+it. See `slow-powers:evaluating-skills` ("Seeding conversation context") and its [pressure-scenarios reference](../evaluating-skills/references/pressure-scenarios.md) for the pressure taxonomy.
 
 ## Further reading
 
 - `slow-powers:evaluating-skills` — phase 2: measuring whether the draft works
-- [Persuasion principles](references/persuasion-principles.md) — research foundation for
-  discipline language
+- [Persuasion principles](references/persuasion-principles.md) — research foundation for discipline language
 - [agentskills.io best-practices](https://agentskills.io/skill-creation/best-practices) and
   [optimizing-descriptions](https://agentskills.io/skill-creation/optimizing-descriptions) —
   harness-agnostic depth on patterns and description testing

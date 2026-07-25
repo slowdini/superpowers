@@ -74,9 +74,7 @@ test('retry works', async () => {
 
 ## Testing anti-patterns — scan before you commit a test
 
-While writing or changing a test, check it against this table. If a row matches, read the named
-section of the [testing anti-patterns reference](references/testing-anti-patterns.md) before
-moving on — mocks are the most common source of these, but not the only one.
+While writing or changing a test, check it against this table. If a row matches, read the named section of the [testing anti-patterns reference](references/testing-anti-patterns.md) before moving on — mocks are the most common source of these, but not the only one.
 
 | If your test… | Anti-pattern | Section to read |
 |---|---|---|

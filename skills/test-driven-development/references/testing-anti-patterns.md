@@ -151,9 +151,7 @@ const mockResponse = {
 "Ready for testing"
 ```
 
-Testing is part of implementation, not an optional follow-up — you can't claim complete without
-tests, and TDD would have caught this. Write the failing test first; see the
-[TDD cycle](../SKILL.md).
+Testing is part of implementation, not an optional follow-up — you can't claim complete without tests, and TDD would have caught this. Write the failing test first; see the [TDD cycle](../SKILL.md).
 
 ## Anti-Pattern 6: Order-Dependent Mocks and Assertions
 
@@ -189,8 +187,7 @@ expect(fetchUser).toHaveBeenCalledWith(
 
 **Gate:** Before using a `...Once` queue, a per-call-index stub, or a "last call / call N" assertion, ask "Can the code under test call this a different number of times, or in a different order, than I expect?" (retries? cache refetch/revalidation? re-render? effect on mount? parallelism?) If yes — or you're unsure — stub by input: return the right value for any matching call and a sensible default for the rest, never letting the stub return `undefined` for a value the code consumes; and assert by matching (`toHaveBeenCalledWith` / `objectContaining`), not by index. Also reduce non-determinism at the source: in tests, disable retries and background revalidation, and control timers, so the call count is predictable.
 
-When this footgun surfaces as a flaky CI failure, use the `slow-powers:investigating-bugs`
-[flaky-test diagnostic](../../investigating-bugs/references/diagnosing-flaky-tests.md).
+When this footgun surfaces as a flaky CI failure, use the `slow-powers:investigating-bugs` [flaky-test diagnostic](../../investigating-bugs/references/diagnosing-flaky-tests.md).
 
 ## When Mocks Become Too Complex
 
