@@ -20,6 +20,39 @@ import {
 const PACKAGE_VERSION = (readJson("package.json") as { version: string })
   .version;
 
+const SKILL_ROOT_ENTRIES = new Set([
+  "SKILL.md",
+  "assets",
+  "evals",
+  "references",
+  "scripts",
+]);
+
+function listFilesRecursively(root: string): string[] {
+  if (!fs.existsSync(root)) return [];
+
+  return fs
+    .readdirSync(root, { recursive: true, withFileTypes: true })
+    .filter((entry) => entry.isFile())
+    .map((entry) => path.join(entry.parentPath, entry.name));
+}
+
+function localMarkdownTargets(markdownPath: string): string[] {
+  const markdown = fs.readFileSync(markdownPath, "utf8");
+
+  return [...markdown.matchAll(/\[[^\]]*]\(([^)\s]+)(?:\s+["'][^"']*["'])?\)/g)]
+    .map((match) => match[1])
+    .filter((target): target is string => target !== undefined)
+    .filter(
+      (target) =>
+        !target.startsWith("#") &&
+        !target.startsWith("mailto:") &&
+        !/^[a-z][a-z0-9+.-]*:\/\//i.test(target),
+    )
+    .map((target) => target.split(/[?#]/, 1)[0])
+    .filter((target): target is string => target !== undefined);
+}
+
 describe("shared assets (delivered by every harness)", () => {
   const bootstrap = fs.readFileSync(
     path.join(REPO_ROOT, "bootstrap.md"),
@@ -50,6 +83,9 @@ describe("shared assets (delivered by every harness)", () => {
     .readdirSync(path.join(REPO_ROOT, "skills"), { recursive: true })
     .map(String)
     .filter((entry) => entry.endsWith("SKILL.md"));
+  const skillDirs = skillFiles.map((skillFile) =>
+    path.join(REPO_ROOT, "skills", path.dirname(skillFile)),
+  );
 
   test("skills/ is populated with discoverable SKILL.md files", () => {
     expect(skillFiles.length).toBeGreaterThan(0);
@@ -69,6 +105,78 @@ describe("shared assets (delivered by every harness)", () => {
     expect(content.startsWith("---")).toBe(true);
     expect(content).toMatch(/\nname:\s*\S/);
     expect(content).toMatch(/\ndescription:\s*\S/);
+  });
+
+  test.each(
+    skillDirs,
+  )("%s keeps peer content in documented directories", (skillDir) => {
+    const unexpected = fs
+      .readdirSync(skillDir, { withFileTypes: true })
+      .filter((entry) => !entry.name.startsWith("."))
+      .filter(
+        (entry) =>
+          entry.isFile() ||
+          listFilesRecursively(path.join(skillDir, entry.name)).some(
+            (file) => !path.basename(file).startsWith("."),
+          ),
+      )
+      .map((entry) => entry.name)
+      .filter((entry) => !SKILL_ROOT_ENTRIES.has(entry));
+
+    expect(unexpected).toEqual([]);
+  });
+
+  const agentMarkdownFiles = skillDirs.flatMap((skillDir) => [
+    path.join(skillDir, "SKILL.md"),
+    ...listFilesRecursively(path.join(skillDir, "references")).filter((file) =>
+      file.endsWith(".md"),
+    ),
+  ]);
+
+  test.each(
+    agentMarkdownFiles,
+  )("%s links resolve to existing local files", (markdownPath) => {
+    const missing = localMarkdownTargets(markdownPath)
+      .map((target) => path.resolve(path.dirname(markdownPath), target))
+      .filter((target) => !fs.existsSync(target))
+      .map((target) => path.relative(REPO_ROOT, target));
+
+    expect(missing).toEqual([]);
+  });
+
+  test.each(
+    skillDirs,
+  )("%s references every bundled reference file", (skillDir) => {
+    const referencesDir = path.join(skillDir, "references");
+    const bundledReferences = new Set(listFilesRecursively(referencesDir));
+    const reached = new Set<string>();
+    const pending = [path.join(skillDir, "SKILL.md")];
+
+    while (pending.length > 0) {
+      const markdownPath = pending.pop();
+      if (markdownPath === undefined || reached.has(markdownPath)) continue;
+      reached.add(markdownPath);
+
+      for (const target of localMarkdownTargets(markdownPath)) {
+        const resolved = path.resolve(path.dirname(markdownPath), target);
+        if (
+          resolved.startsWith(`${referencesDir}${path.sep}`) &&
+          fs.existsSync(resolved)
+        ) {
+          if (resolved.endsWith(".md")) {
+            pending.push(resolved);
+          } else {
+            reached.add(resolved);
+          }
+        }
+      }
+    }
+
+    const unreachable = [...bundledReferences]
+      .filter((reference) => !reached.has(reference))
+      .map((reference) => path.relative(skillDir, reference));
+
+    expect(unreachable).toEqual([]);
   });
 
   const evalConfigs = fs

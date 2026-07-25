@@ -37,7 +37,9 @@ Don't use them for:
 
 The strongest test prompts combine 3+ pressure types. Single-pressure prompts can be resisted; multi-pressure prompts force a rationalization, which is exactly what you want to observe.
 
-For research on why authority/scarcity/commitment principles increase compliance pressure, see `../writing-skills/persuasion-principles.md`.
+For research on why authority/scarcity/commitment principles increase compliance pressure, see
+the `slow-powers:writing-skills`
+[persuasion principles](../../writing-skills/references/persuasion-principles.md).
 
 ## Writing a pressure prompt
 
@@ -159,5 +161,7 @@ A skill is NOT bulletproof if:
 
 ## See also
 
-- `SKILL.md` (this directory) — the methodology that uses these prompts
-- `../writing-skills/persuasion-principles.md` — research foundation for why pressure prompts work
+- [Evaluating Skills](../SKILL.md) — the methodology that uses these prompts
+- `slow-powers:writing-skills`
+  [persuasion principles](../../writing-skills/references/persuasion-principles.md) — research
+  foundation for why pressure prompts work

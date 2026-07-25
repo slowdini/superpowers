@@ -1,6 +1,6 @@
-// Complete implementation of condition-based waiting utilities.
-// Domain-specific example (event-driven thread manager) showing how the generic
-// waitFor pattern specializes into reusable helpers for a real codebase.
+// Complete, non-standalone reference implementation of condition-based waiting
+// utilities. This domain-specific example (an event-driven thread manager) shows
+// how the generic waitFor pattern specializes into helpers for a real codebase.
 
 import type { ThreadManager } from "~/threads/thread-manager";
 import type { LaceEvent, LaceEventType } from "~/threads/types";

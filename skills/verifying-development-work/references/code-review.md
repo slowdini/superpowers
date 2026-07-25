@@ -1,6 +1,6 @@
 # Reviewing the Code
 
-This is **phase 1** of the finishing sequence in [`./SKILL.md`](./SKILL.md) —
+This is **phase 1** of the [finishing sequence](../SKILL.md) —
 the diff review. Review code and comments here, fix or flag the findings that
 matter, then freeze behavior before final verification.
 
@@ -46,7 +46,7 @@ tend to hide. Spend attention where this particular diff warrants it.
 
 After reading the diff, check whether any file you added to is now over 500 lines.
 If one is, it must go through the long-file review in
-[`./long-files.md`](./long-files.md) before you finish — one file at a time. That's a
+[long-file review](./long-files.md) before you finish — one file at a time. That's a
 mandate to *review*, which can conclude "no change needed"; what it forbids is handing
 back a newly-grown long file silently. Files you didn't grow are out of scope.
 
@@ -101,7 +101,7 @@ human to read.
 Fix or explicitly flag each finding you kept. Any behavior fix changes the code — so
 make all behavior-changing fixes *now*, in this phase. When you're done,
 behavior is **frozen**: nothing after this phase changes runtime behavior. Return
-to the finishing sequence in [`./SKILL.md`](./SKILL.md) and establish final
+to the [finishing sequence](../SKILL.md) and establish final
 verification evidence for this frozen result. If qualifying verification evidence
 already exists and this review made no behavior-changing edits after it, reuse
 that evidence instead of rerunning ceremony.

@@ -22,7 +22,13 @@ Avoid "guess-and-check" coding. Always identify the root cause before making cha
 Before changing any code:
 1. **Read Error Messages and Stack Traces:** Read every line of the error. Note the exact file, line number, and error codes.
 2. **Reproduce Consistently:** Identify the exact steps, inputs, or environment needed to trigger the bug. If it cannot be reproduced, gather more logs instead of guessing.
-   * For flaky tests (pass sometimes, fail under load or only in CI), find the non-determinism before changing anything — don't rerun until it goes green. Arbitrary `sleep`/timeout delays are one common cause (wait on the actual condition, not a guessed duration — see `condition-based-waiting.md`); a dependency called a non-deterministic number of times or in a non-deterministic order is another. See `diagnosing-flaky-tests.md` in this directory for the general diagnostic method and a cause catalog.
+   * For flaky tests (pass sometimes, fail under load or only in CI), find the non-determinism
+     before changing anything — don't rerun until it goes green. Arbitrary `sleep`/timeout delays
+     are one common cause (wait on the actual condition, not a guessed duration — see
+     [condition-based waiting](references/condition-based-waiting.md)); a dependency called a
+     non-deterministic number of times or in a non-deterministic order is another. Read
+     [Diagnosing Flaky Tests](references/diagnosing-flaky-tests.md) for the general diagnostic
+     method and cause catalog.
 3. **Check Recent Changes:** Run a git diff. Analyze recent commits, dependency additions, or config changes.
 4. **Gather Evidence (Multi-Component Systems):**
    * Log inputs and outputs at every component boundary.

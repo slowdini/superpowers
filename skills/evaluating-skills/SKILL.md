@@ -33,7 +33,13 @@ A **deterministic** change doesn't move that needle. Removing a one-line "announ
 
 **Either way, announce the decision and why** — "deterministic instruction removal, no eval" or "this changes pressured compliance, I'll run an eval." A visible decision is one the user can override; a silent one is a rationalization waiting to happen. **The door stays open:** if the user wants an eval anyway, run a worthwhile one — design real cases, don't phone it in to confirm a foregone conclusion.
 
-**Skill type is a fast read, not a verdict.** Reference and manually-invoked procedural changes *often* land deterministic; discipline, technique, and pattern changes *often* carry contingency (`pressure-scenarios.md` draws the same line under "When to use" / "Don't use them for"). Use type to orient your first guess — never as the answer. The decision is per *change*, not per type: a deterministic typo fix in a discipline-enforcing skill still skips, and restructuring a reference doc because the agent kept missing a section is contingent and earns an eval.
+**Skill type is a fast read, not a verdict.** Reference and manually-invoked procedural changes
+*often* land deterministic; discipline, technique, and pattern changes *often* carry contingency
+([`pressure-scenarios.md`](references/pressure-scenarios.md) draws the same line under "When to
+use" / "Don't use them for"). Use type to orient your first guess — never as the answer. The
+decision is per *change*, not per type: a deterministic typo fix in a discipline-enforcing skill
+still skips, and restructuring a reference doc because the agent kept missing a section is
+contingent and earns an eval.
 
 ## The Iron Law
 
@@ -103,7 +109,9 @@ Tips for writing good prompts:
 - **Vary phrasing.** Mix casual ("hey can you check this") with precise ("Run `bun test`, quote the output").
 - **Cover edge cases.** Include at least one boundary condition, malformed input, or ambiguous instruction.
 - **Use realistic context.** Real users reference file paths, function names, personal context. "Process this data" is too vague to test anything useful.
-- **For discipline-enforcing skills**, see `pressure-scenarios.md` for the pressure-scenario taxonomy (time pressure, sunk cost, authority, exhaustion, etc.).
+- **For discipline-enforcing skills**, see the
+  [pressure-scenario taxonomy](references/pressure-scenarios.md) (time pressure, sunk cost,
+  authority, exhaustion, etc.).
 
 **Don't write assertions yet.** You don't know what "good" looks like until you see what the first run produces.
 
@@ -111,7 +119,14 @@ Tips for writing good prompts:
 
 What "stresses the skill" depends on what kind of skill it is. The four types from `slow-powers:writing-skills` each need a different style of prompt:
 
-- **Discipline-enforcing skills** (TDD, verifying-development-work). Test with pressure — academic prompts ("explain how TDD works") will pass without measuring anything useful. Combine multiple pressures (time + sunk cost + authority + exhaustion) and force a choice. See `pressure-scenarios.md` for the taxonomy. The wild failure for these skills is almost always *mid-session* — the agent is already committed to a skill-free approach when the trigger arrives — so a cold prompt under-measures them; pair each cold case with a **seeded** one (see *Seeding conversation context* below). Success = the rule holds under maximum pressure.
+- **Discipline-enforcing skills** (TDD, verifying-development-work). Test with pressure — academic
+  prompts ("explain how TDD works") will pass without measuring anything useful. Combine multiple
+  pressures (time + sunk cost + authority + exhaustion) and force a choice. See the
+  [pressure-scenario taxonomy](references/pressure-scenarios.md). The wild failure for these
+  skills is almost always *mid-session* — the agent is already committed to a skill-free approach
+  when the trigger arrives — so a cold prompt under-measures them; pair each cold case with a
+  **seeded** one (see *Seeding conversation context* below). Success = the rule holds under
+  maximum pressure.
 - **Technique skills** (condition-based-waiting, root-cause-tracing). Test application: hand the agent a new scenario where the technique applies and check it gets used correctly. Include at least one edge-case variation. Success = the technique transfers to a situation the skill didn't explicitly describe.
 - **Pattern skills** (flatten-with-flags, information-hiding). Test recognition: include prompts where the pattern applies and prompts where it doesn't. Success = the agent applies the pattern when warranted and refrains when it isn't.
 - **Reference skills** (API docs, syntax guides). Test retrieval: ask questions whose answers are in the reference, including a few that hit gaps you suspect. Success = the agent finds the right section and uses it correctly.
@@ -199,6 +214,7 @@ The mechanics of executing a run live in **[eval-magic](https://github.com/slowd
 ## See also
 
 - `slow-powers:writing-skills` — drafting a skill (Phase 1)
-- `pressure-scenarios.md` — pressure-scenario taxonomy for authoring prompts that stress discipline-enforcing skills
+- [Pressure scenarios](references/pressure-scenarios.md) — taxonomy for authoring prompts that
+  stress discipline-enforcing skills
 - eval-magic (the `eval-magic` tool) — runs the evals this skill teaches you to author
 - agentskills.io/skill-creation/evaluating-skills — the methodology this skill is derived from
