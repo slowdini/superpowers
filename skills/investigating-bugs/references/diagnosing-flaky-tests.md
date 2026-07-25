@@ -47,8 +47,8 @@ Work these in order, before proposing a fix:
 
 | Cause class | How to recognize it | Where the fix lives |
 |---|---|---|
-| Timing guesses (arbitrary `sleep`/`setTimeout`) | Passes fast, fails under load/CI; fixed-delay waits in the test | `condition-based-waiting.md` |
-| Non-deterministic call count/order vs. order-dependent stubs/assertions | A mocked function returns `undefined`/its default mid-test; an assertion reads "the last call" / "call N" and gets the wrong one | "Non-deterministic call count/order" (below) + the `slow-powers:test-driven-development` skill (`testing-anti-patterns.md`) → *Order-Dependent Mocks and Assertions* |
+| Timing guesses (arbitrary `sleep`/`setTimeout`) | Passes fast, fails under load/CI; fixed-delay waits in the test | [Condition-based waiting](./condition-based-waiting.md) |
+| Non-deterministic call count/order vs. order-dependent stubs/assertions | A mocked function returns `undefined`/its default mid-test; an assertion reads "the last call" / "call N" and gets the wrong one | "Non-deterministic call count/order" (below) + the `slow-powers:test-driven-development` skill's [testing anti-patterns reference](../../test-driven-development/references/testing-anti-patterns.md) → *Order-Dependent Mocks and Assertions* |
 | Cross-test state pollution | Passes alone, fails in-suite or under a particular order — depends on a neighbor test's leftover state | reset/isolate shared state per test (mocks, module/global singletons, DB, fake timers); make setup/teardown order-independent |
 
 ### Non-deterministic call count / order
@@ -66,7 +66,4 @@ error/empty state — or the indexed assertion reads the wrong call. Both depend
 or an assertion that received a plausible-but-wrong value (the value from a *different* call than
 the one intended).
 
-**Fix (prevention):** the `slow-powers:test-driven-development` skill (`testing-anti-patterns.md`)
-→ *Order-Dependent Mocks and Assertions*. In short: stub by **input** (return the right value for
-any matching call, a sensible default otherwise, never fall through to `undefined`), and assert a
-matching call **happened** rather than reading a fixed index.
+**Fix (prevention):** the `slow-powers:test-driven-development` skill's [testing anti-patterns reference](../../test-driven-development/references/testing-anti-patterns.md) → *Order-Dependent Mocks and Assertions*. In short: stub by **input** (return the right value for any matching call, a sensible default otherwise, never fall through to `undefined`), and assert a matching call **happened** rather than reading a fixed index.

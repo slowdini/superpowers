@@ -1,7 +1,7 @@
 # Reviewing a File Your Change Made Long
 
 This is a sub-process of **phase 1** of the finishing sequence in
-[`./SKILL.md`](./SKILL.md), reached from [`./code-review.md`](./code-review.md). It
+[the skill](../SKILL.md), reached from the [code-review reference](./code-review.md). It
 runs when your change grew a file past the line limit.
 
 You've added code to a file that's now too long for humans and agents to parse
@@ -109,7 +109,7 @@ category and reason. No file that tripped the rule passes silently.
 
 ## Keep it proportional
 
-[`./code-review.md`](./code-review.md) warns against a review louder than the change it
+The [code-review reference](./code-review.md) warns against a review louder than the change it
 covers. This is the one place a small change earns a structured look — because the cost
 of an unmaintainable file accrues quietly until a human inherits it. The *response*,
 though, stays minimal: the smallest carve-out that fits the PR. A sprawling whole-file
