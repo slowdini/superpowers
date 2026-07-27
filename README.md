@@ -18,6 +18,9 @@
   <a href="#why-trust-these-skills"><img
     src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fslowdini%2Fslow-powers%2Fdev%2F.github%2Fbadges%2Fevals.json"
     alt="evals" /></a>
+  <a href="https://github.com/agentskills/agentskills/tree/main/skills-ref"><img
+    src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fslowdini%2Fslow-powers%2Fdev%2F.github%2Fbadges%2Fskills-ref.json"
+    alt="skills-ref validation" /></a>
 </p>
 
 # Slow-powers
