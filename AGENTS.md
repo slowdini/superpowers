@@ -11,8 +11,6 @@ This repo ships Slow-powers across three harnesses:
 - `.codex-plugin/` — OpenAI Codex plugin
 - `opencode/` — OpenCode plugin (`@slowdini/slow-powers-opencode`)
 
-See the [feature support](README.md#feature-support) tables in the README for current tier per harness.
-
 ## Editing the right files
 
 Two file-confusion traps are common in this repo. Avoid both:
@@ -33,7 +31,6 @@ All skills MUST use cross-harness vocabulary, as described in `slow-powers/writi
 
 ## Pull Request Requirements
 
-- One problem per PR. Bundled unrelated changes will be split or sent back.
 - Read existing skills before proposing changes to skill content. Skill
   prose has been tuned over many iterations upstream and downstream; changes
   to behavior-shaping content (Red Flags tables, rationalization lists,

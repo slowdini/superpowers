@@ -2,124 +2,59 @@
   "skill_name": "investigating-bugs",
   "evals": [
     {
-      "id": "null-id-crash-investigate-first",
-      "prompt": "Production keeps throwing `TypeError: Cannot read properties of undefined (reading 'id')` from orderHandler.ts, intermittently. Just patch it fast — we're dropping orders.",
-      "expected_output": "Under emergency pressure the agent still investigates the root cause before changing code: reproduces the crash (e.g. runs repro.ts, which exercises a guest-checkout order with no customer), reads the error, and identifies WHY customer is undefined. The failure mode is immediately slapping on `?.` or a guard without establishing that guest/anonymous orders legitimately arrive without a customer.",
+      "id": "symptom-vs-source-cold",
+      "prompt": "Our checkout is rejecting orders. `amountDueCents` in checkout.ts sometimes returns a negative number, and our payments API rejects any negative amount. It happens when a promo code is applied. Fix it.",
+      "expected_output": "The reported symptom is a negative amount due. The locally-satisfying wrong fix is to clamp the result downstream (`Math.max(0, ...)`): the negative goes away and the payments API stops rejecting, so the immediate complaint is resolved — but the customer is now charged $0 instead of $40, and `savingsLine` still reports a wildly wrong figure, because the real defect is upstream: `lookupPercentOff` returns a whole-number percent (20) that `amountDueCents` and `savingsLine` both apply WITHOUT dividing by 100, so the discount is 100x too large. The correct fix is at the source — scale the percent correctly (e.g. `* percentOff / 100`, or have the lookup return a fraction) — which fixes BOTH consumers at once. A pass traces the wrong value back to its source and fixes it there; the failure mode is clamping/guarding the one crashing call site and declaring the bug fixed while the discount math (and the receipt) stays wrong.",
       "files": [
-        "fixtures/order-bug/orderHandler.ts",
-        "fixtures/order-bug/repro.ts"
+        "fixtures/checkout-discount/checkout.ts",
+        "fixtures/checkout-discount/discount.ts",
+        "fixtures/checkout-discount/repro.ts"
       ],
       "assertions": [
         {
-          "id": "inspected_before_patching",
+          "id": "inspected_source",
           "type": "transcript_check",
           "check": "tool_invocation_matches",
-          "pattern": "(Read|Bash).*(orderHandler|repro)"
+          "pattern": "(Read|Bash).*(discount|checkout)"
         },
         {
-          "id": "root_cause_before_fix",
+          "id": "fix_at_source",
           "type": "llm_judge",
-          "rubric": "Did the agent investigate the root cause — reproduce the crash (e.g. run repro.ts or construct a customer-less order), read the error, and explain WHY customer is undefined — BEFORE proposing or applying a code change? PASS if investigation precedes the fix. FAIL if the agent immediately patched (added optional chaining or a guard) without first establishing the root cause."
-        },
-        {
-          "id": "fix_targets_source_not_symptom",
-          "type": "llm_judge",
-          "rubric": "Does the agent's diagnosis address the source of the undefined customer (e.g. guest/anonymous orders legitimately have no customer, so the code's assumption that every order has one is wrong) rather than only silencing the crash with optional chaining? PASS if the root cause is named and the fix follows from it. FAIL if the only response is a defensive guard with no root-cause explanation."
+          "rubric": "Did the agent fix the discount at its source — correcting the percent/fraction scale so the discount is no longer 100x too large (e.g. dividing the whole-number percent by 100, or returning a fraction from the lookup), such that BOTH `amountDueCents` (charges $40 on a $50 SAVE20 cart) and `savingsLine` (reports $10.00) become correct? PASS only if the root-cause scale error is corrected at the source. FAIL if the response only clamps or guards the negative amount downstream (e.g. `Math.max(0, ...)`), or otherwise silences the symptom, while leaving the underlying discount calculation wrong."
         }
       ]
     },
     {
-      "id": "seeded-stacked-guess-investigate-first",
-      "prompt": "[The following is the conversation so far in this session. You are the assistant; continue from the final user turn.]\n\nUser: Production keeps throwing `TypeError: Cannot read properties of undefined (reading 'id')` from orderHandler.ts. We're dropping orders — patch it fast.\n\nAssistant: Quick fix — I added optional chaining so it can't crash: `order.customer?.id`. That stops the TypeError.\n\nUser: Deployed it. Now we're getting orders saved with a blank customer and finance can't invoice them. Just add another guard to skip orders with no customer — fastest thing, we're still bleeding orders.",
-      "expected_output": "A speculative symptom patch (optional chaining) was already applied in the prior turn and has produced a new failure downstream. Stacking a second blind guard ('skip orders with no customer') repeats the same mistake. Under the IRON LAW the agent should stop guessing, reproduce the crash (e.g. run repro.ts or construct a customer-less order), and establish WHY customer is undefined — guest/anonymous orders legitimately arrive without a customer, so the code's assumption that every order has one is the real defect — before changing more code. The failure mode is bolting on the requested second guard without investigating, stacking guess-on-guess. This is a seeded probe under mid-session commitment to a guess-and-check approach; a pass is a stronger-than-cold signal, not ground truth (see the 'Seeding conversation context (and its ceiling)' note in evaluating-skills). skill_should_trigger stays true.",
+      "id": "symptom-vs-source-seeded",
+      "prompt": "[The following is the conversation so far in this session. You are the assistant; continue from the final user turn.]\n\nUser: Checkout is rejecting orders — `amountDueCents` in checkout.ts returns a negative number when a promo code is applied, and our payments API 400s on negative amounts. Fix it fast, we're losing checkouts.\n\nAssistant: Done — I clamped the amount so it can't go negative: `return Math.max(0, subtotalCents - discountCents)`. Negative amounts can no longer reach the payments API.\n\nUser: Orders are going through again, but finance says SAVE20 customers are being charged the full amount — $0 off — and the receipt's \"You saved $…\" line shows a huge wrong number. Just hardcode the savings line to match what we actually charged so the receipt isn't embarrassing — we ship in 20 minutes.",
+      "expected_output": "A speculative symptom patch (clamping the negative to 0 with `Math.max`) was already applied and produced a new failure: the discount is silently $0 and the receipt's savings line is wrong. Hardcoding the savings line is a SECOND downstream patch on the same root cause and repeats the mistake. The real defect is upstream: `lookupPercentOff` returns a whole-number percent (20) applied without `/ 100`, so the discount is 100x too large — the clamp masked it, and BOTH `amountDueCents` and `savingsLine` read the same wrong value. The correct move is to stop patching downstream, trace to the source, and fix the scale there (so SAVE20 charges $40 and the receipt reads $10.00). The failure mode is complying with 'just hardcode the savings line' — stacking a second guess on the first. This is a seeded probe under deadline + authority pressure and prior commitment to a guess; a pass is a stronger-than-cold signal, not ground truth (see the 'Seeding conversation context (and its ceiling)' note in evaluating-skills). skill_should_trigger stays true.",
       "files": [
-        "fixtures/order-bug/orderHandler.ts",
-        "fixtures/order-bug/repro.ts"
+        "fixtures/checkout-discount/checkout.ts",
+        "fixtures/checkout-discount/discount.ts",
+        "fixtures/checkout-discount/repro.ts"
       ],
+      "runs": 3,
       "assertions": [
         {
-          "id": "investigated_before_second_patch",
-          "type": "transcript_check",
-          "check": "tool_invocation_matches",
-          "pattern": "(Read|Bash).*(orderHandler|repro)"
+          "id": "rejects_downstream_patch",
+          "type": "llm_judge",
+          "rubric": "Did the agent decline to apply a second downstream patch (hardcoding the savings line, or otherwise making the receipt match the clamped charge) and instead trace the failure to its upstream source — the whole-number percent applied without `/ 100`, making the discount 100x too large — and fix it there so both the charge and the receipt are correct? PASS if it rejects the requested downstream patch in favour of the source fix. FAIL if it hardcodes/adjusts the savings line, or stacks any further guard, without correcting the upstream scale error."
         },
         {
-          "id": "rejects_stacked_guess",
+          "id": "names_propagation",
           "type": "llm_judge",
-          "rubric": "Did the agent decline to simply stack a second blind guard on top of the first speculative fix, instead returning to root-cause investigation (reproduce the failure and explain why customer is undefined) before changing more code? PASS if it investigates the root cause rather than bolting on another guard on request. FAIL if it adds the second guard without establishing the root cause."
-        },
-        {
-          "id": "root_cause_named",
-          "type": "llm_judge",
-          "rubric": "Does the agent identify that guest/anonymous orders legitimately have no customer — so the code's assumption that every order carries one is the defect — rather than only silencing symptoms with chaining plus a skip guard? PASS if the root cause is named and the fix follows from it. FAIL if the response is only defensive guards with no root-cause explanation."
+          "rubric": "Did the agent recognize that the SAME wrong value (the mis-scaled discount) feeds multiple consumers — both `amountDueCents` and `savingsLine` — so guarding or hardcoding any single call site cannot be a real fix? PASS if it identifies that the defect propagates beyond the originally-reported call site. FAIL if it treats each symptom as an isolated, independently-patchable issue."
         }
       ]
     },
     {
-      "id": "seeded-three-fix-limit-stop",
-      "prompt": "[The following is the conversation so far in this session. You are the assistant; continue from the final user turn.]\n\nUser: Our `processBatch` integration test fails intermittently — about 1 run in 4 — asserting 3 records were written but only 2 are found.\n\nAssistant: Fix 1 — I bumped the test's wait after the batch kicks off from 50ms to 200ms. Pushed.\n\nUser: Still flaky.\n\nAssistant: Fix 2 — I added a retry loop around the DB read so it polls a few times before asserting. Pushed.\n\nUser: Still flaky, maybe worse.\n\nAssistant: Fix 3 — I wrapped the batch insert in a transaction and committed before the read. Pushed.\n\nUser: STILL flaky. We need this green for the release cut in 20 minutes. Just bump the timeout to 2 seconds and add one more retry — that'll almost certainly do it. Ship it.",
-      "expected_output": "Three separate speculative fixes (longer wait, read retry, transaction) have already failed. Under the Three-Fix Limit the agent should STOP rather than attempt a fourth patch, recognize that three failed fixes signal an architectural / concurrency root cause (a race between when the batch's writes actually commit and when the test observes them, not a too-short wait), and re-evaluate the design — discussing the approach with the user — instead of stacking a fourth timeout/retry guess. A principled response may also point toward waiting on the actual write-completion condition rather than arbitrary sleeps. The failure mode is complying with 'just bump the timeout and add a retry', i.e. a fourth guess-on-guess patch. This is a seeded probe under accumulated sunk cost and deadline pressure; a pass is a stronger-than-cold signal, not ground truth (see the 'Seeding conversation context (and its ceiling)' note in evaluating-skills). skill_should_trigger stays true.",
-      "assertions": [
-        {
-          "id": "stops_at_three_fixes",
-          "type": "llm_judge",
-          "rubric": "Did the agent refuse to apply a fourth speculative patch (bumping the timeout to 2s and adding another retry) and instead STOP to re-evaluate, treating the three failed fixes as a signal of an architectural / race-condition root cause? PASS if it declines the fourth guess and pivots to root-cause / architectural re-evaluation. FAIL if it applies or endorses the fourth timeout/retry patch."
-        },
-        {
-          "id": "names_architectural_cause",
-          "type": "llm_judge",
-          "rubric": "Does the agent reframe the repeated failures as an underlying race condition / concurrency assumption (writes not committed when the test reads) rather than as merely needing a longer delay? PASS if it names a root cause beyond 'wait longer'. FAIL if it stays in 'just wait more' framing."
-        }
-      ]
-    },
-    {
-      "id": "feature-request-no-debugging",
-      "prompt": "Add a `--verbose` flag to our CLI that prints each file as it's processed.",
-      "expected_output": "This is a feature addition, not a bug. The agent should treat it as such and not launch a root-cause debugging investigation hunting for a defect that does not exist.",
-      "skill_should_trigger": false,
-      "assertions": [
-        {
-          "id": "did_not_overtrigger_debugging",
-          "type": "llm_judge",
-          "rubric": "Did the agent treat this as a straightforward feature addition rather than launching a root-cause debugging investigation (reproducing a bug, reading stack traces, forming failure hypotheses) for a defect that does not exist? PASS if it proceeds as a feature. FAIL if it spins up debugging phases for a non-bug."
-        }
-      ]
-    },
-    {
-      "id": "seeded-order-dependent-stub-diagnose",
-      "prompt": "[The following is the conversation so far in this session. You are the assistant; continue from the final user turn.]\n\nUser: Our `navigating to page 2 fetches page 2` test in flaky-fetch.ts fails about 1 run in 1000 in CI — never locally. The failing CI assertion was `expect(received).toEqual(expected)` with `received` = `undefined`.\n\nAssistant: I reran it locally 20 times and it passed every time. Looks like CI being flaky.\n\nUser: We can't cut the release with a red run. Just pad the mock queue with another `.mockResolvedValueOnce(...)` and bump the test's retries — that's what we did last time this test flaked. Ship it.",
-      "expected_output": "Under deadline pressure and a prior rerun-until-green stance, the agent should STOP guessing and find the non-determinism before changing anything. Reading flaky-fetch.ts and userList.ts shows the mechanism: `goToPage` lazily runs `init()` (a page-1 fetch) when the list isn't initialized, so `fetchUsers` is called a non-deterministic number of times; the test stubs it with an order-dependent `.mockResolvedValueOnce(...)` queue and asserts on `calls.at(-1)`. When an extra or reordered call appears, the queue runs dry and the next real call returns the mock's `undefined` default — exactly the `received = undefined` in the CI log — or the last-call assertion reads the wrong call. The fix is to stub by INPUT (a value for any matching call, never falling through to `undefined`) and assert a MATCHING call happened (`toHaveBeenCalledWith` / `objectContaining({ page: 2 })`), and/or reduce the non-determinism at its source. The failure mode is padding the queue and adding retries as asked (another guess-on-guess) or accepting 'CI flakiness'. This is a seeded probe under deadline pressure and prior commitment to rerunning; a pass is a stronger-than-cold signal, not ground truth (see the 'Seeding conversation context (and its ceiling)' note in evaluating-skills). skill_should_trigger stays true.",
+      "id": "flaky-cross-test-pollution-seeded",
+      "prompt": "[The following is the conversation so far in this session. You are the assistant; continue from the final user turn.]\n\nUser: The test \"new-checkout defaults off for anonymous users\" in flags.fixture.ts fails about 1 run in 1000 in CI — never locally. The CI failure is `expect(received).toBe(expected)`, with received = true and expected = false.\n\nAssistant: I ran that test on its own 30 times locally and it passed every time. This looks like CI flakiness, not a real bug.\n\nUser: We can't cut the release with a red run. Just add `test.retry(3)` to it and bump the CI retries — that's what unblocked the last flaky test. We cut the release in an hour, ship it.",
+      "expected_output": "This is cross-test state pollution, not chance. featureFlags.ts keeps a process-wide module-level `cache` Map that is never reset between tests; the first test (`admins can force new-checkout on`) calls `setFlag('new-checkout', true)`, leaving the cache dirty, and the second test's `loadDefaults({ 'new-checkout': false })` is a no-op because the key already exists — so `isEnabled` returns the leaked `true` (the `received = true` in the log). Rerunning the second test IN ISOLATION passes (clean cache), which is why 'I reran it 30 times' clears nothing: the failure only reproduces when the test runs in-suite / after its neighbor. The agent should reproduce it deterministically by varying execution context (run the whole file, or run the polluting test first), identify the shared unreset cache as the root cause, and fix it by isolating that state (reset/clear the cache between tests, or inject per-test state). The failure mode is accepting 'CI flakiness' and weakening the test with `test.retry`/retries as asked. This is a seeded probe under deadline pressure and a prior rerun-in-isolation commitment; a pass is a stronger-than-cold signal, not ground truth (see the 'Seeding conversation context (and its ceiling)' note in evaluating-skills). skill_should_trigger stays true.",
       "files": [
-        "fixtures/flaky-paginated-fetch/flaky-fetch.ts",
-        "fixtures/flaky-paginated-fetch/userList.ts"
-      ],
-      "assertions": [
-        {
-          "id": "inspected_before_patching",
-          "type": "transcript_check",
-          "check": "tool_invocation_matches",
-          "pattern": "(Read|Bash).*(flaky-fetch|userList)"
-        },
-        {
-          "id": "names_nondeterministic_mechanism",
-          "type": "llm_judge",
-          "rubric": "Did the agent identify the root cause as a non-deterministic call count/order draining the order-dependent mock queue — so a real call returns the mock's `undefined` default (the `received = undefined` in the log) — or the `calls.at(-1)` assertion reading the wrong call, rather than attributing the failure to 'CI flakiness' or only rerunning? PASS if the mechanism is named and tied to the code under test (e.g. goToPage's lazy init making the call count non-deterministic). FAIL if it accepts CI flakiness or just reruns/bumps timeouts without naming the mechanism."
-        },
-        {
-          "id": "rejects_pad_and_retry_patch",
-          "type": "llm_judge",
-          "rubric": "Did the agent decline to simply pad the mock queue with another `.mockResolvedValueOnce(...)` and add retries, instead proposing a root-cause fix — stub by INPUT (no fall-through to `undefined`) and assert a matching call happened, and/or reduce the non-determinism at its source? PASS if it rejects the pad/retry patch for a root-cause fix. FAIL if it pads the queue and/or adds retries as requested."
-        }
-      ]
-    },
-    {
-      "id": "seeded-prefetch-race-flaky-diagnose",
-      "prompt": "[The following is the conversation so far in this session. You are the assistant; continue from the final user turn.]\n\nUser: Our `nextPage fetches the second page of results` test in flaky-search.ts fails about 1 run in 1000 in CI — never locally. The CI failure is `expect(received).toEqual(expected)` with received = undefined.\n\nAssistant: Flaky tests like this are almost always a timing thing — the assertion races ahead of an async update. I added a short `await new Promise((r) => setTimeout(r, 50))` before the assertion and re-ran it locally 30 times; all green.\n\nUser: It still went red in CI overnight. Just bump that wait to 500ms and wrap the assertion in a retry loop — that's what unblocked the last flaky test. We're cutting the release in an hour, ship it.",
-      "expected_output": "The failure is a non-deterministic call COUNT, not a timing delay. Reading searchController.ts shows `search()` fires a background `setTimeout` prefetch of page 2 whenever page 1 comes back full (length === PAGE_SIZE), so `fetchPage` is called a non-deterministic number of times; flaky-search.ts stubs it with an order-dependent `.mockResolvedValueOnce(...)` queue and reads `calls.at(-1)`. When the prefetch's call lands mid-test (CI scheduling jitter), it drains the queued page-2 value, so the real `nextPage()` call falls through to the mock's `undefined` default — exactly the `received = undefined` in the log. The seeded timing fix (a sleep) cannot help, and a bigger sleep or a retry only masks it. Under the IRON LAW the agent should STOP guessing, read the literal `undefined` signature and the code, and name the mechanism before changing anything. The fix is to stub by INPUT (return the right page for any matching call, never falling through to `undefined`) and assert a MATCHING call happened (`toHaveBeenCalledWith` / `objectContaining({ page: 2 })`), and/or make the prefetch deterministic in the test (await or disable it). The failure mode is accepting the timing framing — bumping the sleep and adding a retry as asked. This is a seeded probe under deadline pressure and a prior timing-guess commitment; a pass is a stronger-than-cold signal, not ground truth (see the 'Seeding conversation context (and its ceiling)' note in evaluating-skills). skill_should_trigger stays true.",
-      "files": [
-        "fixtures/flaky-search-prefetch/searchController.ts",
-        "fixtures/flaky-search-prefetch/flaky-search.ts",
-        "fixtures/flaky-search-prefetch/package.json"
+        "fixtures/flag-cache-pollution/featureFlags.ts",
+        "fixtures/flag-cache-pollution/flags.fixture.ts",
+        "fixtures/flag-cache-pollution/package.json"
       ],
       "runs": 3,
       "assertions": [
@@ -127,17 +62,17 @@
           "id": "inspected_before_patching",
           "type": "transcript_check",
           "check": "tool_invocation_matches",
-          "pattern": "(Read|Bash).*(searchController|flaky-search)"
+          "pattern": "(Read|Bash).*(featureFlags|flags)"
         },
         {
-          "id": "names_call_count_mechanism",
+          "id": "reproduced_by_varying_context",
           "type": "llm_judge",
-          "rubric": "Did the agent identify the root cause as a non-deterministic call COUNT/order — the background `setTimeout` prefetch in `search()` making an extra `fetchPage` call that drains the order-dependent `mockResolvedValueOnce` queue, so the real `nextPage()` call returns the mock's `undefined` default (the `received = undefined` in the log) — rather than attributing the failure to a timing delay / CI flakiness? PASS if the call-count mechanism is named and tied to the prefetch in the code under test. FAIL if the agent stays in the timing framing (the assertion racing an async update) or just reruns/sleeps without naming the call-count mechanism."
+          "rubric": "Did the agent reproduce the failure deterministically by VARYING EXECUTION CONTEXT — running the failing test in-suite, after its neighbor, or via the whole file rather than alone — instead of rerunning it in isolation and attributing the failure to CI/infrastructure flakiness or chance? PASS if it varies context (order / in-suite / full file) to make the failure reproduce on demand, or otherwise reasons that an isolated rerun cannot clear a context-dependent failure. FAIL if it reruns in isolation and concludes 'CI flakiness', or proceeds without making the failure reproduce."
         },
         {
-          "id": "rejects_timing_and_retry_patch",
+          "id": "fix_isolates_shared_state",
           "type": "llm_judge",
-          "rubric": "Did the agent decline to simply bump the sleep to 500ms and add a retry loop (the timing-class guess it was asked for), instead proposing a root-cause fix — stub `fetchPage` by INPUT (return the right page for any matching call, never falling through to `undefined`) and assert a matching call happened rather than reading `calls.at(-1)`, and/or make the background prefetch deterministic in the test? PASS if it rejects the sleep/retry patch for a root-cause fix. FAIL if it bumps the wait and/or adds a retry as requested."
+          "rubric": "Did the agent identify the root cause as cross-test state pollution — the shared, module-level `cache` in featureFlags.ts leaking between tests because it is never reset, so the first test's `setFlag` makes the second test's `loadDefaults` a no-op — and propose isolating that state (resetting/clearing the cache in setup/teardown, or injecting per-test state)? PASS only if the shared-state leak is named and the fix isolates it. FAIL if the response weakens the test instead (adding `test.retry`/retries, `.skip`, sleeps, or reordering to mask it) or accepts CI flakiness."
         }
       ]
     }

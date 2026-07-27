@@ -25,8 +25,8 @@ Write production code before the test? Delete it. Start over. Do not keep it for
    * Write one minimal, focused test showing what the behavior *should* do.
    * Use real code and real inputs; avoid mocks unless absolutely unavoidable.
      Before committing a test, scan it against the **Testing anti-patterns**
-     table below; if it matches a row, read the named section of
-     `./testing-anti-patterns.md` first.
+     table below; if it matches a row, read the named section of the
+     [testing anti-patterns reference](references/testing-anti-patterns.md) first.
 2. **Verify RED — Watch It Fail:**
    * Run the test command: `npm test` / `pytest` / `go test`.
    * **MANDATORY:** Verify it fails for the expected reason (e.g., function not defined, value incorrect), not due to a typo or build error.
@@ -74,7 +74,7 @@ test('retry works', async () => {
 
 ## Testing anti-patterns — scan before you commit a test
 
-While writing or changing a test, check it against this table. If a row matches, read the named section of `./testing-anti-patterns.md` before moving on — mocks are the most common source of these, but not the only one.
+While writing or changing a test, check it against this table. If a row matches, read the named section of the [testing anti-patterns reference](references/testing-anti-patterns.md) before moving on — mocks are the most common source of these, but not the only one.
 
 | If your test… | Anti-pattern | Section to read |
 |---|---|---|
