@@ -106,3 +106,45 @@ have caused a primary failure.
   other behaviors ("the rest didn't matter" is exactly the sub-additivity error);
   a diffuse result does not license adding text.
 - Anything about other tiers or harnesses. `claude-sonnet-5` only.
+
+---
+
+## OUTCOME RECORD — 2026-07-28 (appended after the run; the text above is frozen)
+
+**Prediction HELD on every threshold. Attribution CONFIRMED.**
+
+| | full (`old_skill`) | ablated (`new_skill`) | rule | met |
+|---|:--:|:--:|:--:|:--:|
+| `left_a_regression_test` (primary) | **10/10** | **5/10** | full ≥ 0.85, ablated ≤ 0.65 | ✓ |
+| Δ (full − ablated) | **+0.50** | | ≥ +0.25 | ✓ |
+| Fisher exact two-sided | **p = 0.0325** | | < 0.05 | ✓ |
+| `fix_is_correct` (control) | 10/10 | 10/10 | ~1.00 both arms | ✓ |
+
+The ablated arm landed exactly on the discovery run's `without_skill` rate (5/10) —
+deleting B1's three lexical expressions reverted the measured behavior to the no-skill
+baseline while the skill was still loaded and invoked (invocation 10/10 in both arms).
+
+**Validity (gate passed):** invocation 1.0/1.0; `live_source_reads` 0; model id
+`claude-sonnet-5` verified in a pre-fleet smoke dispatch and across all 20 event files.
+Guard denials 7 (full) vs 15 (ablated) — not symmetric in count, but checked causally
+per the rule: failing runs 1 and 3 had zero denials; runs 5 and 10 were each the
+`/dev/null` redirect false positive (eval-magic#179); run 2's was a `/tmp/repro.ts`
+scratch block after which the agent wrote the repro in-env, ran it, and deleted it by
+choice. No denial caused a primary failure. One stray-write violation (`/tmp/repro.ts`,
+ablated run 8) was in a *passing* run and outside grading scope.
+
+**Failure texture (n=5, observation not claim):** ablated failures split 1
+wrote-in-env-then-`rm`'d / 4 never-wrote-a-file (all 4 verified via 3–5 inline
+`bun`/`node` executions instead). The final diffs of the five failures are all
+1 file / ±1 line; all ten full-skill diffs are 2 files / ~20 lines.
+
+**Cost texture (observation not claim):** full arm 508k ± 54k tokens; ablated arm
+849k ± 359k, with its five *passing* runs occupying the top five token counts
+(881k–1.48M). With B1's text present, durable verification was reliable and cheap;
+without it, it was a coin flip that cost 2–3× when it happened.
+
+**Disposition per the decision rule:** recorded in `../COVERAGE.md` (B1 →
+ablation-confirmed). Baseline untouched. Fixture untouched. Live SKILL.md untouched —
+this result does not license trimming anything else (sub-additivity), and the working
+tree ablation was reverted after workspace staging (verified: tree clean, staged arms
+differed by exactly the frozen diff).

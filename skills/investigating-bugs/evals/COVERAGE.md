@@ -14,7 +14,7 @@ the behavior is dead on weaker models or other harnesses.
 
 ## Covered behaviors
 
-### B1. Leave durable verification behind — **CONFIRMED, carries the baseline**
+### B1. Leave durable verification behind — **CONFIRMED + ABLATION-CONFIRMED**
 
 Fix the bug *and* leave an artifact (test or failing-on-regression script) that would catch
 it coming back — don't verify in passing and discard the evidence.
@@ -29,6 +29,12 @@ it coming back — don't verify in passing and discard the evidence.
   Cost +58% tokens / +43% wall clock. The dominant unskilled failure is *writing* the
   verification, running it, then **deleting it** (7 of 11 failures) — the behavior is
   durability, not diligence.
+- **Attribution: ablation-confirmed** (2026-07-28, pre-registered pilot,
+  `baseline/PRE-REGISTRATION-ABLATION-PHASE-4-1.md`): full skill vs skill minus B1's
+  functional unit = **10/10 vs 5/10** (Δ +0.50, Fisher p = 0.0325, n=10/arm, Sonnet 5),
+  control ceiled, validity clean. Deleting B1's three lexical expressions reverted the
+  behavior to the no-skill rate while the rest of the skill stayed loaded and invoked —
+  the case→behavior link in this row is validated, not assumed.
 
 ### B2. Reproduce environment-dependent bugs by varying the context — **CEILED (Sonnet 5)**
 
@@ -106,9 +112,11 @@ would detect its removal, and is a candidate for a future case:
   rows attach to the behaviors above. Whether any single restatement earns its keep is a
   Mode B revision question, not an ablation unit.
 
-## Planned attribution check
+## Attribution check — RAN, CONFIRMED
 
-`baseline/PRE-REGISTRATION-ABLATION-PHASE-4-1.md` pre-registers the pilot ablation of B1
+`baseline/PRE-REGISTRATION-ABLATION-PHASE-4-1.md` pre-registered the pilot ablation of B1
 (full skill vs skill minus B1's functional unit, `pagination-drops-last-page-cold` only) —
 the direct test that the confirmed effect is attributable to B1 rather than to the skill's
-general verification ethos.
+general verification ethos. It ran 2026-07-28 and the prediction held on every threshold
+(10/10 vs 5/10, p = 0.0325); see the dated OUTCOME RECORD appended to that file. B1's row
+above carries the result. No other behavior's attribution has been ablation-tested.
