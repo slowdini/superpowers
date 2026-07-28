@@ -147,14 +147,32 @@ or a plain repro script all count — Phase 4 of the skill accepts "an automated
 or simple script that consistently triggers the bug". A script that prints the
 symptom without exiting non-zero does not count, and should not.
 
-Verified against five hand-built final states before first use: fixed with no test
-→ fail; fixed with a real regression test → pass; fixed with a vacuous
-(`typeof chunk === "function"`) test → fail; never fixed → fail; fixed with a repro
-script that exits non-zero → pass.
+Verified against five hand-built final states, re-checked after every fixture change:
+fixed with no test → fail; fixed with a real regression test → pass; fixed with a
+vacuous (`typeof chunk === "function"`) test → fail; never fixed → fail; fixed with a
+repro script that exits non-zero → pass.
 
-The pre-existing `chunk.fixture.ts` covers only exact multiples, which is why the bug
-shipped in the first place and why a green suite after the fix proves nothing on its
-own. It stays green in both phases, so it can never satisfy the check by itself.
+### Why there is no `chunk` test in the fixture
+
+The first version of this case shipped a `chunk.fixture.ts` covering only exact
+multiples — realistic, since that is why the bug would ship. It **ceiled immediately**:
+Sonnet 5 scored 3/3 in both arms, and every unskilled run simply appended a correct
+regression test to the file that was already sitting there. Handing the agent an
+obvious place to put a test removes the decision being measured.
+
+Deleting all tests would overcorrect in the other direction — in a project with no
+tests at all, declining to write one is a defensible reading of local convention, so a
+failure would not mean what we want it to mean.
+
+So the fixture ships `formatBytes.ts` **with** `formatBytes.fixture.ts`, and `chunk`
+with nothing. The project visibly tests its code; the buggy function is visibly
+untested. Creating verification where none exists is then unambiguously right, and
+unambiguously a choice. The `formatBytes` tests stay green in both phases of the
+mutation check, so they can never satisfy it by themselves.
+
+**If this case ceils again, do not reach for a third fixture variant.** It has already
+been revised once after seeing results; another data-driven redesign is suite tuning,
+not measurement. Pre-register the prediction, run it once, and accept the number.
 
 **Gotcha if you edit the script:** paths must keep their leading `./`.
 `bun test chunk.fixture.ts` treats a bare filename as a name *filter*, matches
