@@ -2,7 +2,8 @@
 
 Durable run guidance for `evals.json`. (Per-baseline observations live in
 `baseline/NOTES.md`; this file is about how the suite must be invoked and how the
-fixtures are meant to behave.)
+fixtures are meant to behave. Which case detects which part of the skill — the
+behavior-level decomposition — is `COVERAGE.md`.)
 
 ## The dispatch environment MUST be pinned to a non-negative UTC offset
 
