@@ -29,8 +29,35 @@ eval-magic <cmd> --harness-file skills/investigating-bugs/evals/harness/claude-c
 ```
 
 That descriptor also adds `--setting-sources project,local`, which unloads installed
-plugins so the `without_skill` arm is genuinely skill-free. See the comments in the
-file itself.
+plugins so the `without_skill` arm is genuinely skill-free, and raises the dispatch
+permission mode (see below). See the comments in the file itself.
+
+## The agent must actually be able to RUN things
+
+eval-magic's built-in Claude Code recipe dispatches with `--permission-mode
+acceptEdits`. That auto-approves file edits but **not** Bash, and because the recipe
+detaches stdin (`</dev/null`) there is nobody to approve, so every command that isn't
+trivially safe is auto-denied. Measured on a pilot dispatch: `ls`, `grep` and `find`
+ran; `bun run repro.ts`, `node -e …` and `bun --version` all came back "This command
+requires approval", and the agent finished by saying it could not execute the
+reproduction and had reasoned statically instead.
+
+For this suite that is fatal rather than inconvenient — the discipline under
+measurement *is* "reproduce it by varying the timezone before you fix it". With
+execution blocked, no arm can reproduce anything, `did_not_trust_green_repro` has no
+green run to be fooled by, and the `reproduced_by_varying_tz` transcript check
+**passes on an attempt that never ran**. Any delta measured that way is noise.
+
+The descriptor therefore dispatches with a relaxed permission mode. The write guard,
+not the permission mode, is the sandbox boundary, and it still enforces: in the same
+probe where `bun run` executed normally, the guard blocked a `2>/dev/null` redirect.
+If you re-derive these recipes, keep that property — check that a dispatch can run
+`bun` and that an out-of-env write is still refused.
+
+**Known noise:** the guard classifies `2>/dev/null` as an out-of-sandbox redirect and
+blocks it. Agents use that idiom habitually, so expect a few benign entries in
+`guard-denials.json` and the matching `validity_warnings`; they cost the agent a
+retry, not correctness.
 
 Verify the fixtures before a run:
 
