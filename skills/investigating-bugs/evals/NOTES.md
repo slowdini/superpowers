@@ -174,6 +174,16 @@ mutation check, so they can never satisfy it by themselves.
 been revised once after seeing results; another data-driven redesign is suite tuning,
 not measurement. Pre-register the prediction, run it once, and accept the number.
 
+**Outcome (2026-07-28): it did not ceil — v2 works, and this case now carries the
+baseline.** Discovery n=10/arm: 10/10 vs 5/10, p = 0.0325. Confirmatory replication
+n=20/arm: **20/20 vs 9/20, p = 0.000145**. Pooled 30/30 vs 14/30, p = 1.9 × 10⁻⁶.
+The fixture is frozen — do not touch it to chase a nicer number.
+
+The failure modes are worth knowing, because they are not what you would guess: of
+the 11 failing `without_skill` runs in the replication, **7 wrote verification inside
+the sandbox, ran it, and then deleted it**; only 4 never wrote one at all. The case
+measures *durability*, not diligence.
+
 **Gotcha if you edit the script:** paths must keep their leading `./`.
 `bun test chunk.fixture.ts` treats a bare filename as a name *filter*, matches
 nothing, and exits non-zero — which fails phase 1 for every run regardless of what
@@ -203,15 +213,22 @@ the agent did. `bun test ./chunk.fixture.ts` treats it as a path.
   exact failure this suite is built to avoid. A locale-dependent parse would ride on
   the same `matrix` support the timezone case uses.
 
-## Case status
+## Case status — measured on Sonnet 5, n=10/arm (2026-07-28)
 
-- `timezone-date-only-shift-cold` / `timezone-nudge-ship-pressure-seeded` — new
-  (Mode A), graded by transcript + `llm_judge` + the held-out `command_check` matrix.
-- `pagination-drops-last-page-cold` — new (Mode A), graded entirely by runner-owned
-  command checks: a correctness control plus the mutation check above.
-- `flaky-cross-test-pollution-seeded` — kept, but **on probation**: it has ceiled on
-  base Sonnet 4.6 and on Haiku 4.5 before, and it has no objective decoy-catcher.
-  Held to the same bar this run.
+- `pagination-drops-last-page-cold` — **carries the baseline.** 20/20 vs 9/20,
+  p = 0.000145 at n=20/arm. Graded entirely by runner-owned command checks: a
+  correctness control plus the mutation check above. Fixture frozen.
+- `timezone-nudge-ship-pressure-seeded` — **CEILED.** All four assertions 10/10 in
+  *both* arms.
+- `timezone-date-only-shift-cold` — **effectively ceiled.** 10/10 vs 9/10 or 10/10
+  throughout; `did_not_trust_green_repro` ceiled outright at 10/10 vs 10/10.
+- `flaky-cross-test-pollution-seeded` — 10/10 vs 8/10, p = 0.47. Not significant.
 
-Baseline is PENDING — promote only after a run shows a positive, decoy-driven delta
-against the Iron Law (`baseline/BASELINE.md`).
+Base Sonnet 5 already varies TZ to reproduce, distrusts a green repro, and isolates
+shared state. **The ceiled cases are deliberately kept.** Deleting a case because it
+stopped flattering the skill is how a suite gets tuned into agreement; they stay so
+the next tier's run can show whether the ceiling is real. They are diagnostic, not
+evidence of value — never quote them as a delta.
+
+Baseline is **PROMOTED** for durable verification only — see `baseline/NOTES.md` for
+the scope limits, and read them before quoting any number from this suite.
