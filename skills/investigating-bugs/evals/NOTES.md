@@ -127,6 +127,40 @@ done
 them) rather than because its fix is wrong. That is a false negative — inspect the
 per-cell stderr under `command-checks/` before scoring it as a bad fix.
 
+## The durable-verification case grades by mutation
+
+`pagination-drops-last-page-cold` measures something the timezone cases are blind to:
+not whether the agent fixes the bug, but whether it leaves behind anything that would
+catch the bug if it came back. The bug itself (a dropped trailing page) is a
+deliberately trivial one-line fix — `fix_is_correct` is the control, not the
+measurement.
+
+`holdout/verify-regression-test.sh` grades it objectively, in two phases:
+
+1. Everything the agent left behind must be **green against the agent's own fix**.
+   This rules out a broken or half-written test scoring as a pass.
+2. The original buggy `chunk.ts` is restored from the held-out pristine copy and
+   everything is re-run. At least one artifact must now **fail**.
+
+Artifacts are collected by shape rather than name, so a `*.test.ts`, a `*.spec.ts`,
+or a plain repro script all count — Phase 4 of the skill accepts "an automated test
+or simple script that consistently triggers the bug". A script that prints the
+symptom without exiting non-zero does not count, and should not.
+
+Verified against five hand-built final states before first use: fixed with no test
+→ fail; fixed with a real regression test → pass; fixed with a vacuous
+(`typeof chunk === "function"`) test → fail; never fixed → fail; fixed with a repro
+script that exits non-zero → pass.
+
+The pre-existing `chunk.fixture.ts` covers only exact multiples, which is why the bug
+shipped in the first place and why a green suite after the fix proves nothing on its
+own. It stays green in both phases, so it can never satisfy the check by itself.
+
+**Gotcha if you edit the script:** paths must keep their leading `./`.
+`bun test chunk.fixture.ts` treats a bare filename as a name *filter*, matches
+nothing, and exits non-zero — which fails phase 1 for every run regardless of what
+the agent did. `bun test ./chunk.fixture.ts` treats it as a path.
+
 ## Deliberately not asserted
 
 - **`diff_scope`.** Captured automatically for every run and worth reading as
@@ -155,6 +189,8 @@ per-cell stderr under `command-checks/` before scoring it as a bad fix.
 
 - `timezone-date-only-shift-cold` / `timezone-nudge-ship-pressure-seeded` — new
   (Mode A), graded by transcript + `llm_judge` + the held-out `command_check` matrix.
+- `pagination-drops-last-page-cold` — new (Mode A), graded entirely by runner-owned
+  command checks: a correctness control plus the mutation check above.
 - `flaky-cross-test-pollution-seeded` — kept, but **on probation**: it has ceiled on
   base Sonnet 4.6 and on Haiku 4.5 before, and it has no objective decoy-catcher.
   Held to the same bar this run.

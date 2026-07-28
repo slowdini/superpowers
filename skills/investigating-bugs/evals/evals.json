@@ -4,7 +4,7 @@
     {
       "id": "timezone-date-only-shift-cold",
       "prompt": "Some users say the due date on their invoices shows up a day early — one customer in California reported it. Looks like `formatDueDate` in display.ts is off by one. Can you fix it? Works fine for me when I check it.",
-      "expected_output": "The stored value (`\"2024-03-10\"`) is a calendar date — no time, no zone. The defect is in the shared `toDate` helper (parseDate.ts): `new Date(\"2024-03-10\")` parses date-only ISO strings as UTC midnight, so any LOCAL component read shifts the day for users behind UTC. `display.ts`, `save.ts`, and `overdue.ts` all go through `toDate`, so the same wrong value reaches all three. The reproduction is environment-dependent: `repro.ts` PASSES under the default `TZ=UTC` (or any non-negative offset) and only fails under a negative offset like `TZ=America/Los_Angeles` — which is exactly why 'works fine for me' is misleading. The tempting wrong fixes all pass the reporter's case but break others: a `+1 day`/offset nudge in `formatDueDate` over-corrects positive-offset users (now a day LATE) and leaves `save`/`overdue` wrong; the common 'force local parse' (`new Date(ymd + \"T00:00:00\")`) fixes display everywhere but breaks the `save` round-trip for POSITIVE offsets because `toISOString()` rolls back a day (verified: under Europe/Berlin, `2024-12-31` round-trips to `2024-12-30`). The only correct fix treats the value as a timezone-agnostic calendar date at the source — keep it as `YYYY-MM-DD` and read components from the string, or use `Date.UTC`/`getUTC*` consistently — so display, save round-trip, and isDueToday are all correct in every timezone. A pass varies TZ to reproduce, traces the shift to the shared parse, and fixes it at the source; the failure mode is trusting the green default-TZ run ('can't reproduce / works for me') or applying a per-layer Date nudge that silences the reported case while corrupting an un-reported one. The held-out `holdout/tz-matrix.holdout.ts` (run by eval-magic across a TZ matrix once the command_check + env-matrix features land) is the objective decoy-catcher; today the same property is judged from the response.",
+      "expected_output": "The stored value (`\"2024-03-10\"`) is a calendar date — no time, no zone. The defect is in the shared `toDate` helper (parseDate.ts): `new Date(\"2024-03-10\")` parses date-only ISO strings as UTC midnight, so any LOCAL component read shifts the day for users behind UTC. `display.ts`, `save.ts`, and `overdue.ts` all go through `toDate`, so the same wrong value reaches all three. The reproduction is environment-dependent: `repro.ts` PASSES under the default `TZ=UTC` (or any non-negative offset) and only fails under a negative offset like `TZ=America/Los_Angeles` — which is exactly why 'works fine for me' is misleading. The tempting wrong fixes all pass the reporter's case but break others: a `+1 day`/offset nudge in `formatDueDate` over-corrects positive-offset users (now a day LATE) and leaves `save`/`overdue` wrong; the common 'force local parse' (`new Date(ymd + \"T00:00:00\")`) fixes display everywhere but breaks the `save` round-trip for POSITIVE offsets because `toISOString()` rolls back a day (verified: under Europe/Berlin, `2024-12-31` round-trips to `2024-12-30`). The only correct fix treats the value as a timezone-agnostic calendar date at the source — keep it as `YYYY-MM-DD` and read components from the string, or use `Date.UTC`/`getUTC*` consistently — so display, save round-trip, and isDueToday are all correct in every timezone. A pass varies TZ to reproduce, traces the shift to the shared parse, and fixes it at the source; the failure mode is trusting the green default-TZ run ('can't reproduce / works for me') or applying a per-layer Date nudge that silences the reported case while corrupting an un-reported one. The held-out `holdout/tz-matrix.holdout.ts`, run by the `all_consumers_correct_in_every_tz` command_check across the TZ matrix, is the objective decoy-catcher; the judges grade the same property from the response.",
       "files": [
         "fixtures/tz-date-only/parseDate.ts",
         "fixtures/tz-date-only/display.ts",
@@ -28,7 +28,7 @@
         {
           "id": "fixed_as_calendar_date",
           "type": "llm_judge",
-          "rubric": "Did the agent fix the bug at its source by treating the value as a timezone-agnostic CALENDAR DATE — handling it as a `YYYY-MM-DD` string, or using `Date.UTC`/`getUTC*` consistently — so that display, the `serializeForSave` round-trip, and `isDueToday` are all correct in EVERY timezone (negative AND positive offsets)? PASS only if the root-cause parse is corrected so a calendar date is never re-zoned. FAIL if the response nudges a `Date` by a day/offset/hours (e.g. `setDate(+1)`, subtracting `getTimezoneOffset`, or `new Date(ymd + \"T00:00:00\")`) — any of which fixes the reporter's case while corrupting positive-offset users, the save round-trip, or `isDueToday` — or if it only edits `formatDueDate` and leaves the shared parse and the other consumers wrong."
+          "rubric": "Did the agent fix the bug at its source so that the stored value is handled as a CALENDAR DATE consistently across every consumer — display, the `serializeForSave` round-trip, and `isDueToday` all correct at negative AND positive UTC offsets? Judge the property, not the technique: keeping it as a `YYYY-MM-DD` string, using `Date.UTC`/`getUTC*` throughout, or parsing to local midnight AND reading it back with local getters everywhere (including replacing `toISOString()` in `serializeForSave`) are all PASSES, because each leaves every consumer correct in every zone. FAIL if any consumer is left inconsistent with the representation the agent chose — a local-midnight parse still serialized through `toISOString()`, a per-layer day/offset nudge (`setDate(+1)`, subtracting `getTimezoneOffset`), or a change to `formatDueDate` alone that leaves the shared parse and the other consumers wrong."
         },
         {
           "id": "all_consumers_correct_in_every_tz",
@@ -74,7 +74,7 @@
         {
           "id": "replaced_nudge_with_source_fix",
           "type": "llm_judge",
-          "rubric": "Did the agent replace the downstream `+1 day` nudge with a source fix that treats the value as a timezone-agnostic calendar date (string-based handling, or consistent `Date.UTC`/`getUTC*`) in the shared parse, so display, the `serializeForSave` round-trip, and `isDueToday` are correct in every timezone? PASS only if the nudge is removed in favour of the source fix. FAIL if it keeps the nudge, stacks a second nudge on another layer, or otherwise leaves the shared parse re-zoning a calendar date."
+          "rubric": "Did the agent remove the downstream `+1 day` nudge and fix the shared parse instead, so that display, the `serializeForSave` round-trip, and `isDueToday` are all correct at negative AND positive UTC offsets? Judge the property, not the technique: a `YYYY-MM-DD` string representation, consistent `Date.UTC`/`getUTC*`, or a local-midnight parse read back with local getters everywhere (including replacing `toISOString()` in `serializeForSave`) are all PASSES. FAIL if the nudge survives, if a second nudge is stacked on another layer, or if any consumer is left inconsistent with the representation the agent chose."
         },
         {
           "id": "all_consumers_correct_in_every_tz",
@@ -89,6 +89,37 @@
               "Europe/Berlin"
             ]
           },
+          "expect_exit_code": 0
+        }
+      ]
+    },
+    {
+      "id": "pagination-drops-last-page-cold",
+      "prompt": "Support says the last few results go missing from the final page — a customer with 7 saved items only ever sees 6 of them. It's `chunk` in chunk.ts. Can you sort it out? We're mid-release, so quick as you can.",
+      "expected_output": "`chunk` advances while `i + size <= items.length`, so any trailing partial page is silently dropped: 7 items at size 3 yields two pages and loses the 7th item. The fix is one line (`i < items.length`). The bug is deliberately trivial to fix — fixing it is the control, not the measurement. What this case measures is whether the agent leaves behind something that would catch the bug if it came back: an automated test or a repro script that actually fails on the defect. The existing `chunk.fixture.ts` covers only exact multiples, which is precisely why the bug shipped, so a passing suite after the fix proves nothing on its own. The failure mode is a correct one-line patch, a confident summary, and nothing durable — the reported symptom is gone and the next regression is undetected. The held-out `verify-regression-test.sh` grades this objectively: it runs everything the agent left behind against the agent's own fix (which must be green), then restores the original buggy `chunk.ts` and re-runs; a genuine regression artifact must now fail. A vacuous test, or no test at all, cannot pass that. The 'quick as you can' framing is mild delivery pressure — the discipline is supposed to hold under it.",
+      "files": [
+        "fixtures/chunk-pagination/chunk.ts",
+        "fixtures/chunk-pagination/chunk.fixture.ts",
+        "fixtures/chunk-pagination/package.json"
+      ],
+      "assertions": [
+        {
+          "id": "fix_is_correct",
+          "type": "command_check",
+          "setup_files": [
+            "fixtures/chunk-pagination/holdout/correctness.holdout.ts"
+          ],
+          "command": "cd fixtures/chunk-pagination && bun test ./holdout/correctness.holdout.ts",
+          "expect_exit_code": 0
+        },
+        {
+          "id": "left_a_regression_test",
+          "type": "command_check",
+          "setup_files": [
+            "fixtures/chunk-pagination/holdout/verify-regression-test.sh",
+            "fixtures/chunk-pagination/holdout/pristine/chunk.ts"
+          ],
+          "command": "sh fixtures/chunk-pagination/holdout/verify-regression-test.sh",
           "expect_exit_code": 0
         }
       ]
