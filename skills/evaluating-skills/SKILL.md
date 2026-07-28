@@ -116,6 +116,21 @@ What "stresses the skill" depends on what kind of skill it is. The four types fr
 - **Pattern skills** (flatten-with-flags, information-hiding). Test recognition: include prompts where the pattern applies and prompts where it doesn't. Success = the agent applies the pattern when warranted and refrains when it isn't.
 - **Reference skills** (API docs, syntax guides). Test retrieval: ask questions whose answers are in the reference, including a few that hit gaps you suspect. Success = the agent finds the right section and uses it correctly.
 
+**Failure-prevention vs quality-gradient skills — a cut across those four types.** Some skills exist to prevent an obvious, catchable failure: `hardening-plans` stops a plan that cites a hallucinated file, and a single correctness check separates the skilled arm from the unskilled one. Others are *quality-gradient*: the agent already produces a working result, and the skill makes it smaller, faster, more targeted, or correct on the cases the developer didn't test — `investigating-bugs` is the type case (any competent model fixes the reported bug; the skill is about fixing it at the source, once, for everyone). Binary "did it work?" assertions **ceil** on quality-gradient skills, because the unskilled arm also produces something that works. To get a delta you need an engineered trap (a fix that's green on the happy path but wrong elsewhere) and/or a scope/quality metric (a held-out test across other inputs, a diff size) — not just a correctness check the unskilled arm passes too.
+
+### Engineering an attractive failure
+
+An eval only measures a skill when the **unskilled arm is genuinely tempted into the wrong path**. If the correct answer is also the obvious answer, both arms take it, the delta is zero, and you have measured nothing — however many runs you spend. A ceiling like that is a property of the *case*, not the skill: the trap was never baited.
+
+The richest traps combine **hard reproduction** with a **locally-rewarded wrong fix**:
+
+- *Hard to reproduce* — the bug only manifests under conditions the developer's own machine doesn't have: a different timezone, locale, clock, data shape, or scale. A green run in the default environment (and a reporter's "works fine for me") is then not evidence the bug is gone, so the disciplined move — reproduce by varying the context — becomes the thing the skill has to supply.
+- *Locally rewarded but wrong* — there is a fast fix that makes the reported symptom go away on the happy path yet breaks an un-reported one: a second consumer of the same value, a different user segment, a boundary the report didn't mention. The unskilled arm takes it and feels finished; only investigation surfaces the breakage.
+
+The worked example: a JavaScript date-only field that renders a day early for users west of UTC. A developer in UTC can't reproduce it; the obvious nudges (`+1 day`, "force local parse") each fix the reporter's case while corrupting other offsets or the save round-trip; only treating the value as a timezone-agnostic calendar date is correct everywhere. The anti-example is a trap that *doesn't* bait — a clamp that visibly charges $0, which any competent model rejects on sight. There is nothing to be tempted by, so there is nothing to measure.
+
+In a small fixture, full investigation is nearly free, so a lazy path is only tempting if you build the temptation in. That is the work: manufacture — with a hidden environment variable, or a second consumer of the same value — the cost a large real codebase would impose for free.
+
 ### Seeding conversation context (and its ceiling)
 
 A cold prompt measures trigger-recognition *in isolation*. The harder, more realistic failure is trigger-recognition *under a competing attractor* — an agent already mid-session, committed to a skill-free approach, where loading the skill reads as redundant. Approximate that by **seeding**: embed prior `User:` / `Assistant:` turns directly in the `prompt` string (it is wrapped verbatim as the user request, so a multi-line transcript needs no schema change). Seed an `Assistant:` turn that has already produced work in a native, skill-free style, then a final `User:` turn carrying the real request. A seed can reproduce prior commitment / in-flight momentum, redundancy framing, sunk cost, and — usefully — a prior plan that *name-drops* a skill (e.g. a parenthetical "TDD — tests first") without actually following it, so you can test whether the agent makes the discipline load-bearing or treats the label as compliance. For a worked example, see the seeded cases in `hardening-plans/evals/`.
@@ -173,6 +188,8 @@ Once a run is graded and aggregated, the headline is the **delta**: what the ski
 - **Study assertions that pass with the skill but fail without it.** This is where the skill adds value — understand *why*.
 - **Tighten instructions when results are inconsistent.** High stddev = ambiguous instructions or model variability.
 - **Read time/token outliers.** If one run is 3× longer, read its transcript for the bottleneck.
+
+**A ceiling has two causes — tell them apart.** Both arms passing can mean the skill has no effect at this tier, or the eval is too easy. Disambiguate two ways: check whether the unskilled arm *ever* takes the decoy across runs, and verify each "passing" fix against a held-out matrix (other timezones, other inputs) rather than the reported repro alone. If the unskilled arm reaches the full correct answer unprompted, the ceiling is real — the skill doesn't change behavior at this tier, and the Iron Law says don't ship; that null result is a legitimate, documented finding, not a failure to measure. If neither arm was ever tempted, the trap wasn't attractive — redesign it (see *Engineering an attractive failure*) before concluding anything. Lowering the model tier sharpens the distinction.
 
 **Human review** catches what assertions don't — outputs that are technically correct but miss the point. Keep per-eval reviewer notes; an empty note means the output looked fine. Focus the next iteration on the cases you had specific complaints about.
 
