@@ -145,6 +145,61 @@ supporting detail, and the table needs a shape that can carry that. Drafting the
 reframe is deliberately deferred until the numbers are in, so the frame follows the
 result rather than the reverse.
 
+## DEVIATION RECORD — 2026-07-28, added after the run
+
+**The run did not use the pre-registered agent model.** `--agent-model` was omitted
+from `eval-magic run`, and the dispatch driver carried no `--model` flag, so all 80
+dispatches fell through to the session default and executed on **`claude-sonnet-5`**,
+not `claude-haiku-4-5-20251001`. Everything below the "Run parameters" heading was
+frozen before dispatch and is unmodified; this section is appended, not edited in.
+
+Consequences, stated plainly:
+
+1. **This run does not fulfil this pre-registration.** The predictions P1–P7 were
+   calibrated on Haiku 4.5 observations. Sonnet 5 is a different population, so a hit
+   or miss here is not the confirmatory test that was planned.
+2. **The pre-registered decision rule returns DO NOT PROMOTE**, on two independent
+   grounds: neither co-primary reached p < 0.05 (P2 ceiled outright at 10/10 vs
+   10/10; P3 gave 10/10 vs 8/10, p = 0.47), and the validity gate failed
+   (skill-invocation 39/40, not 1.0).
+3. **P1 hit its pre-specified numbers on the wrong population.** Predicted
+   `with_skill ≥ 0.8`, `without_skill ≤ 0.5`, `Δ ≥ +0.3`; observed 1.00 / 0.50 /
+   +0.50, Fisher p = 0.0325. This is a real confirmation of a pre-specified
+   hypothesis, weakened — not voided — by the population mismatch. It needs a
+   replication on a declared population before it is advertised.
+4. **P5 is refuted, and in the opposite direction.** Predicted −41% tokens / −32%
+   wall clock. Observed on Sonnet 5: **+24.8% tokens** (2.98 SE) and **+18.4% wall
+   clock** (2.11 SE). The Haiku efficiency *gain* is therefore not a property of the
+   skill — it is a property of unskilled Haiku flailing, and it reverses on the
+   current tier. Any README claim of a token saving would have been a tier-specific
+   artifact advertised as a general result. **Do not revive it.**
+5. **P6 was wrong about direction of certainty.** The aggregate pass rate was
+   predicted inconclusive at ~1.4 SE; it came back **+10.8pp at 2.96 SE**
+   (CI [+3.6pp, +18.0pp]), because the `with_skill` arm ceiled at exactly 1.000 with
+   zero variance. **It is still not promoted to the headline** — the pre-registration
+   demoted it unconditionally and "it happened to clear" is precisely the
+   post-hoc promotion that rule exists to forbid.
+
+**Validity findings that survive scrutiny** (checked, not assumed):
+
+- `live_source_reads: 0` — no dispatch read the real repository.
+- 2 stray-write violations, one in each arm, both blocked, both benign `/tmp` scratch
+  writes. No pollution of the workspace.
+- 107 guard denials, 105 of them the known redirect false positive (eval-magic#179).
+  Distribution is symmetric across arms — 54 `with_skill` vs 53 `without_skill` — so
+  they cannot bias a delta.
+- The one non-invoking `with_skill` run (`flaky/with_skill/run-9`) does not shift the
+  `with_skill` mean, which is 1.000 across all 40 runs with or without it.
+- **The P1 result is not a guard artifact.** Two of the five `without_skill` failures
+  had a `/tmp` write denied. Both recovered, wrote their verification *inside* the
+  sandbox, ran it — and then deleted it themselves before finishing. Transcript-level
+  failure modes: 3 runs never wrote verification at all; 2 wrote it, ran it, and
+  removed it.
+
+**What is owed before anything is promoted:** a run on a declared model with P1 as
+the stated primary endpoint. Do not re-tune the pagination fixture to chase this —
+it is frozen, and it already did its job.
+
 ## Run parameters (frozen)
 
 - **Agent model:** `claude-haiku-4-5-20251001`. **Judge model:** `claude-sonnet-5`.
