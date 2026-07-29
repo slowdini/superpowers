@@ -1,24 +1,24 @@
 # Baseline — investigating-bugs
 
-**Status: PENDING (no promoted baseline).**
+Committed reference output from a canonical eval run. Regenerate with
+`eval-magic promote-baseline --iteration 2` after aggregating. The ephemeral workspace (run records, timing,
+dispatch files, produced outputs) stays gitignored under `.eval-magic/`
+and is reclaimable by `eval-magic teardown` once promoted (this commit's marker).
 
-The eval suite was rebuilt from scratch (slim, de-scaffolded, outcome-graded — see
-`evals.json`). The previous baseline measured the legacy 6-case suite, which ceiled
-(with_skill 1.00 vs without_skill 0.967, +3.3pp on Sonnet 4.6), so its `benchmark.json`
-and `grading/` were removed rather than left to mislead.
+| Field | Value |
+|-------|-------|
+| Mode | new-skill |
+| Iteration | iteration-2 |
+| Harness | claude-code |
+| Agent model | claude-sonnet-5 |
+| Judge model | claude-sonnet-5 |
+| Conditions | with_skill, without_skill |
+| Run timestamp | 2026-07-28T06:42:45.330Z |
+| Label | investigating-bugs-durable-verification |
+| Promoted from commit | 6fbdb43 |
 
-No baseline is committed for the new suite yet. Per the Iron Law in
-`slow-powers:evaluating-skills`, do not promote one until a fresh Mode A run shows a
-positive delta. To regenerate:
+Files:
+- `benchmark.json` — aggregate pass-rate / duration / token deltas.
+- `grading/<eval-id>__<condition>.json` (multi-run cells add an `__r<k>` suffix per run) — assertion results and judge rationales.
+- `NOTES.md` — operator-authored observations for this baseline (never overwritten by promote).
 
-```
-eval-magic run --skill-dir ./skills --skill investigating-bugs --bootstrap ./bootstrap.md --runs 5
-# ...read the per-assertion deltas, iterate if needed, then:
-eval-magic promote-baseline --skill-dir ./skills --skill investigating-bugs --mode new-skill --overwrite
-```
-
-Target model for the headline: **Sonnet 4.6** (agent + judge). Present the
-`evaluating-skills` pre-flight summary and arm `--guard` before dispatching.
-
-Once promoted, this file is overwritten with the run metadata table, and
-`benchmark.json` / `grading/<eval-id>__<condition>.json` are written alongside it.
