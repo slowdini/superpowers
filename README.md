@@ -124,10 +124,6 @@ Most skill packs ship on vibes. Every slow-powers skill ships with a documented 
 
 **Improvement vs no skill** is the gain in eval pass-rate (percentage points) when the same [eval-magic](https://github.com/slowdini/eval-magic) suite runs with the skill versus without it.
 
-**Cost** is real and we report it rather than burying it. Discipline takes tokens; whether that trade is worth it is your call, not ours. A blank means we haven't measured it yet, not that it's free.
-
-Every figure links to a promoted baseline under `skills/<skill>/evals/baseline/`, including the pre-registered predictions, what ceiled, and what we chose not to claim.
-
 ## Intended Workflows
 
 The skills declare prerequisite / next-step gates so the agent follows an intended skill sequence. These gates **suggest** what comes before and after a skill once it is invoked; they do **not** restrict when any skill can be invoked.
