@@ -113,16 +113,16 @@ Slow-powers provides a set of highly focused skills that ensure your agent opera
 
 ## Why trust these skills?
 
-Most skill packs ship on vibes. Every slow-powers skill ships with a documented eval — or it doesn't ship (see [Philosophy](#philosophy)). Each skill is measured against **the same setup with the skill removed**, so the number means "this skill made the agent better," not just "we changed something."
+Most skill packs ship on vibes. Every slow-powers skill ships with a documented eval — or it doesn't ship (see [Philosophy](#philosophy)). Each skill is measured against an agent with **no skill**, so the number means "this skill made the agent better," not just "we changed something."
 
-| Skill | Measured effect (vs the same setup without it) | Cost | n | Model | Measured |
-|---|---|---|---|---|---|
-| `hardening-plans` | eval pass rate **80.0% vs 57.8%** (+22.2pp) | not measured | 15/arm | Sonnet 4.6 | 2026-06-24 |
-| `investigating-bugs` | leaves a regression test behind: **100% vs 45%** (+55pp, p<0.001) | +58% tokens | 20/arm | Sonnet 5 | 2026-07-28 |
-| `test-driven-development` | TBD | TBD | TBD | TBD | TBD |
-| `verifying-development-work` | TBD | TBD | TBD | TBD | TBD |
+| Skill | Improvement vs no skill | n | Model | Last measured |
+|---|---|---|---|---|
+| `hardening-plans` | TBD | TBD | TBD | TBD |
+| `investigating-bugs` | TBD | TBD | TBD | TBD |
+| `test-driven-development` | TBD | TBD | TBD | TBD |
+| `verifying-development-work` | TBD | TBD | TBD | TBD |
 
-**Measured effect** is what changed when the same [eval-magic](https://github.com/slowdini/eval-magic) suite ran with the skill versus without it. Where a skill's value is a single pass/fail outcome, that's a pass-rate delta. Where it isn't, we name the specific behavior instead of averaging it into a number that hides it — `investigating-bugs` is the case in point: on Sonnet 5 it barely moves whether the agent *fixes* the bug, because the model already does that well. What it changes is whether the agent leaves verification behind afterward. Unskilled runs mostly did write a check, run it, and then delete it.
+**Improvement vs no skill** is the gain in eval pass-rate (percentage points) when the same [eval-magic](https://github.com/slowdini/eval-magic) suite runs with the skill versus without it.
 
 **Cost** is real and we report it rather than burying it. Discipline takes tokens; whether that trade is worth it is your call, not ours. A blank means we haven't measured it yet, not that it's free.
 
