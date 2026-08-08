@@ -2,6 +2,8 @@
 # Ignore local Claude Code state, but track the shared, committed settings.
 .claude/*
 !.claude/settings.json
+# Cline plugin install artifacts (e.g. from `cline plugin install ./ --cwd .`).
+.cline/plugins/
 .DS_Store
 node_modules/
 .eval-magic

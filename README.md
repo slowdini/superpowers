@@ -18,6 +18,9 @@
   <a href="#why-trust-these-skills"><img
     src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fslowdini%2Fslow-powers%2Fdev%2F.github%2Fbadges%2Fevals.json"
     alt="evals" /></a>
+  <a href="https://github.com/agentskills/agentskills/tree/main/skills-ref"><img
+    src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fslowdini%2Fslow-powers%2Fdev%2F.github%2Fbadges%2Fskills-ref.json"
+    alt="skills-ref validation" /></a>
 </p>
 
 # Slow-powers
@@ -40,7 +43,7 @@ Slow-powers is a fork of [obra/superpowers](https://github.com/obra/superpowers)
 
 ## Quickstart
 
-[Claude Code](#claude-code) · [Codex CLI](#codex-cli) · [OpenCode](#opencode)
+[Claude Code](#claude-code) · [Codex CLI](#codex-cli) · [OpenCode](#opencode) · [Cline](#cline)
 
 ## How it works
 
@@ -96,6 +99,17 @@ You can also browse and install it interactively: run `codex`, open
 opencode plugin @slowdini/slow-powers-opencode -g
 ```
 
+### Cline
+
+```bash
+cline plugin install https://github.com/slowdini/slow-powers.git
+```
+
+Cline plugins load in the Cline CLI, SDK, and Kanban — **not** the VSCode or
+JetBrains extensions. On those, you can still use the skills by copying or
+symlinking `skills/` into `.cline/skills/` (project) or `~/.cline/skills/`
+(global); the bootstrap injection and plan gate are CLI/SDK/Kanban-only.
+
 ## The skills
 
 Slow-powers provides a set of highly focused skills that ensure your agent operates with maximum discipline:
@@ -148,8 +162,9 @@ Flat layout — skills and assets live at root, harness-specific integration liv
 - `.claude-plugin/` — Claude Code plugin manifest and hooks
 - `.codex-plugin/` — OpenAI Codex plugin manifest
 - `opencode/` — OpenCode plugin
+- `cline/` — Cline plugin entry point
 - `.claude-plugin/marketplace.json` — Claude Code marketplace registry
-- `package.json` — OpenCode plugin manifest + dev tooling
+- `package.json` — OpenCode + Cline plugin manifests + dev tooling
 
 ## Releasing
 

@@ -1,10 +1,24 @@
 {
   "name": "@slowdini/slow-powers-opencode",
-  "version": "0.5.4",
+  "version": "0.6.0",
   "description": "Slow-powers — structured development workflows for coding agents (TDD, debugging, verification, git hygiene)",
   "type": "module",
   "main": "./opencode/plugins/slow-powers.js",
+  "cline": {
+    "plugins": [
+      {
+        "paths": [
+          "./cline/plugins/slow-powers.js"
+        ],
+        "capabilities": [
+          "hooks",
+          "rules"
+        ]
+      }
+    ]
+  },
   "files": [
+    "cline/",
     "opencode/",
     "skills/",
     "bootstrap.md",
@@ -49,6 +63,7 @@
     "evals:grade": "eval-magic grade --skill-dir ./skills",
     "evals:aggregate": "eval-magic aggregate --skill-dir ./skills",
     "evals:promote-baseline": "eval-magic promote-baseline --skill-dir ./skills",
+    "badge:skills-ref": "bun run scripts/skills-ref-badge.ts",
     "demo": "vhs assets/demo/tdd.tape",
     "check": "biome check --write .",
     "check:ci": "biome check --error-on-warnings .",

@@ -15,7 +15,7 @@ Evals are harness-agnostic: run records use a portable JSON schema so an eval au
 
 ### Two comparison modes
 
-- **Mode A — new skill.** Compares `with_skill` vs `without_skill`. Use when validating that a brand-new skill beats baseline behavior with no skill loaded.
+- **Mode A — new skill.** Compares `with_skill` vs `without_skill`. Use when validating that a brand-new skill beats baseline behavior with no skill loaded. Best understood as a bundle of removal tests — one case per behavior the skill teaches (see *Decompose the skill into behaviors first*).
 - **Mode B — revision (the common case).** Compares `old_skill` vs `new_skill`. Use when testing a language change to an existing skill — snapshot the old `SKILL.md`, then run both variants against the same prompts. A negative or zero delta is a signal to revert: the new language did not improve behavior.
 
 The runner implements both; pick the mode that matches the change you're measuring.
@@ -88,6 +88,18 @@ All of these mean: STOP. Present the pre-flight summary and wait for confirmatio
 
 ## Designing test cases
 
+### Decompose the skill into behaviors first
+
+A skill worth a with-vs-without eval usually teaches several distinct behaviors, and a suite authored "for the skill" measures whichever one it happens to trip over. The type case is in this repo: an `investigating-bugs` case written to test investigation efficiency turned out to measure something else — whether the agent leaves a regression test behind — and that accident became the suite's only confirmed effect. This is also why revision (Mode B) evals are easier to author: a revision arrives pre-scoped, the diff names what to measure. A new-skill suite must do that scoping itself, and decomposition is how. Before authoring any case, inventory the skill as discrete, testable behaviors: for each, finish the sentence *"without this, the agent does Y instead of Z."*
+
+- **Units are functional, not lexical.** A behavior rarely lives in one place — a phase step, a rationalization-table row, and a red-flag bullet often restate the same rule. The unit is the behavior; its inventory entry lists every lexical expression. Redundancy inside a skill is expected and deliberate (discipline skills repeat rules on purpose); whether one particular restatement earns its keep is a Mode B revision question, never part of the decomposition.
+- **Classify each behavior** with the test from *Choosing to test with evals*: contingent (needs a case), deterministic (compliance isn't in doubt — no case), or structural (prerequisites, navigation, cross-links that support other behaviors).
+- **Map both directions.** Every case names the single behavior whose removal should flip it; every contingent behavior names the case that would catch its removal. A contingent behavior with no case is a coverage gap. A behavior no case could ever detect is a trim candidate — tier-scoped, see *Pricing a behavior — ablation runs*.
+
+The map is the suite's coverage report: it shows the range of things the skill demonstrably buys, the way coverage shows which code the tests exercise. Keep it next to the suite (a `COVERAGE.md` beside `evals.json`); the worked example is `skills/investigating-bugs/evals/COVERAGE.md`.
+
+### Writing the cases
+
 A test case has these parts:
 
 - **prompt**: a realistic user message — the kind a real user would actually type
@@ -99,7 +111,7 @@ Cases live in `<skill>/evals/evals.json`. For the file shape, see the author-tem
 
 Tips for writing good prompts:
 
-- **Start with 2–3 test cases.** Don't over-invest before iteration 1.
+- **Start with 2–3 test cases** — the highest-value rows of the behavior map. Don't over-invest before iteration 1.
 - **Vary phrasing.** Mix casual ("hey can you check this") with precise ("Run `bun test`, quote the output").
 - **Cover edge cases.** Include at least one boundary condition, malformed input, or ambiguous instruction.
 - **Use realistic context.** Real users reference file paths, function names, personal context. "Process this data" is too vague to test anything useful.
@@ -115,6 +127,21 @@ What "stresses the skill" depends on what kind of skill it is. The four types fr
 - **Technique skills** (condition-based-waiting, root-cause-tracing). Test application: hand the agent a new scenario where the technique applies and check it gets used correctly. Include at least one edge-case variation. Success = the technique transfers to a situation the skill didn't explicitly describe.
 - **Pattern skills** (flatten-with-flags, information-hiding). Test recognition: include prompts where the pattern applies and prompts where it doesn't. Success = the agent applies the pattern when warranted and refrains when it isn't.
 - **Reference skills** (API docs, syntax guides). Test retrieval: ask questions whose answers are in the reference, including a few that hit gaps you suspect. Success = the agent finds the right section and uses it correctly.
+
+**Failure-prevention vs quality-gradient skills — a cut across those four types.** Some skills exist to prevent an obvious, catchable failure: `hardening-plans` stops a plan that cites a hallucinated file, and a single correctness check separates the skilled arm from the unskilled one. Others are *quality-gradient*: the agent already produces a working result, and the skill makes it smaller, faster, more targeted, or correct on the cases the developer didn't test — `investigating-bugs` is the type case (any competent model fixes the reported bug; the skill is about fixing it at the source, once, for everyone). Binary "did it work?" assertions **ceil** on quality-gradient skills, because the unskilled arm also produces something that works. To get a delta you need an engineered trap (a fix that's green on the happy path but wrong elsewhere) and/or a scope/quality metric (a held-out test across other inputs, a diff size) — not just a correctness check the unskilled arm passes too.
+
+### Engineering an attractive failure
+
+An eval only measures a skill when the **unskilled arm is genuinely tempted into the wrong path**. If the correct answer is also the obvious answer, both arms take it, the delta is zero, and you have measured nothing — however many runs you spend. A ceiling like that is a property of the *case*, not the skill: the trap was never baited. Engineer the trap against one behavior from your map — bait exactly the shortcut that behavior forbids — so the case works as a removal test rather than a general exam.
+
+The richest traps combine **hard reproduction** with a **locally-rewarded wrong fix**:
+
+- *Hard to reproduce* — the bug only manifests under conditions the developer's own machine doesn't have: a different timezone, locale, clock, data shape, or scale. A green run in the default environment (and a reporter's "works fine for me") is then not evidence the bug is gone, so the disciplined move — reproduce by varying the context — becomes the thing the skill has to supply.
+- *Locally rewarded but wrong* — there is a fast fix that makes the reported symptom go away on the happy path yet breaks an un-reported one: a second consumer of the same value, a different user segment, a boundary the report didn't mention. The unskilled arm takes it and feels finished; only investigation surfaces the breakage.
+
+The worked example: a JavaScript date-only field that renders a day early for users west of UTC. A developer in UTC can't reproduce it; the obvious nudges (`+1 day`, "force local parse") each fix the reporter's case while corrupting other offsets or the save round-trip; only treating the value as a timezone-agnostic calendar date is correct everywhere. The anti-example is a trap that *doesn't* bait — a clamp that visibly charges $0, which any competent model rejects on sight. There is nothing to be tempted by, so there is nothing to measure.
+
+In a small fixture, full investigation is nearly free, so a lazy path is only tempting if you build the temptation in. That is the work: manufacture — with a hidden environment variable, or a second consumer of the same value — the cost a large real codebase would impose for free.
 
 ### Seeding conversation context (and its ceiling)
 
@@ -174,15 +201,28 @@ Once a run is graded and aggregated, the headline is the **delta**: what the ski
 - **Tighten instructions when results are inconsistent.** High stddev = ambiguous instructions or model variability.
 - **Read time/token outliers.** If one run is 3× longer, read its transcript for the bottleneck.
 
+**A ceiling has two causes — tell them apart.** Both arms passing can mean the case's behavior is base-model native at this tier, or the eval is too easy. Disambiguate two ways: check whether the unskilled arm *ever* takes the decoy across runs, and verify each "passing" fix against a held-out matrix (other timezones, other inputs) rather than the reported repro alone. If the unskilled arm reaches the full correct answer unprompted, the ceiling is real — a **null ablation**: the skill doesn't change *that behavior* at this tier. Record it in the coverage map and keep the case as a diagnostic (deleting a case because it stopped flattering the skill is how a suite gets tuned into agreement); a weaker tier or another harness may still need the behavior. If *no* behavior in the map survives, the skill has nothing measurable at this tier and the Iron Law says don't ship — a legitimate, documented finding, not a failure to measure. If neither arm was ever tempted, the trap wasn't attractive — redesign it (see *Engineering an attractive failure*) before concluding anything. Lowering the model tier sharpens the distinction.
+
 **Human review** catches what assertions don't — outputs that are technically correct but miss the point. Keep per-eval reviewer notes; an empty note means the output looked fine. Focus the next iteration on the cases you had specific complaints about.
 
 **Guidance for revision:**
 
 - **Generalize from feedback.** The skill is used across many prompts, not just these cases. Fixes should address underlying issues broadly, not patch specific examples.
-- **Keep the skill lean.** Fewer, better instructions outperform exhaustive rules. If pass rates plateau despite more rules, try removing instructions.
+- **Keep the skill lean.** Fewer, better instructions outperform exhaustive rules. If pass rates plateau despite more rules, remove instructions — and let ablation evidence pick the cut, not taste (see *Pricing a behavior — ablation runs*).
 - **Explain the why.** Reasoning-based instructions ("Do X because Y") outperform rigid directives. Models follow instructions more reliably when they understand the purpose.
 
 **When to stop:** pass rates are satisfactory and reviewer feedback is consistently empty; iteration deltas have plateaued; or you've found a more fundamental issue (wrong scope, unrepresentative prompts).
+
+## Pricing a behavior — ablation runs
+
+The coverage map is a set of claims: *case C flips when behavior B is removed*. An ablation run tests one claim directly. Mechanically it is a Mode B run — old = the full skill, new = the skill minus one behavior — with the expectation inverted: you are hoping the ablated arm gets **worse** on B's case. If it degrades, the mutant is killed — the attribution is confirmed and the behavior demonstrably earns its keep. If it holds, either the effect is diffuse (other parts of the skill carry it) or the behavior isn't doing anything — at this tier.
+
+- **Ablate the functional unit, entire.** Delete every expression of the behavior together — the step, whole table rows that restate it, its red-flag bullets. A restatement left behind compensates for the deleted step and under-credits the behavior.
+- **One behavior at a time, always from the full skill.** Cumulative deletion confounds attribution across behaviors.
+- **A null ablation is a per-tier verdict.** The tier you measured didn't need the behavior; a weaker model or another harness may. Trimming on one tier's null tunes the skill to that tier.
+- **Runs are targeted, not routine.** A meaningful ablation needs the same run count as any other eval, so a per-behavior sweep is a campaign per behavior. The mandatory, free part is the design-time map. Pay for a run only when (a) a new case should prove it detects the behavior it claims to cover, or (b) a trimming decision needs evidence rather than taste.
+
+The whole-skill Mode A delta remains the headline number. Per-behavior deltas are sub-additive — deliberate redundancy means behaviors partially back each other up — so they do not sum to it.
 
 ## Running the eval
 
