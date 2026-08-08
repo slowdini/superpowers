@@ -249,6 +249,28 @@ describe("shared assets (delivered by every harness)", () => {
   });
 });
 
+describe("Cline plugin manifest (package.json cline field)", () => {
+  test("cline.plugins declares resolvable entry files with hooks+rules capabilities", () => {
+    const manifest = readJson("package.json") as {
+      cline?: { plugins?: { paths?: unknown; capabilities?: unknown }[] };
+    };
+    const plugins = manifest.cline?.plugins ?? [];
+    expect(plugins.length).toBeGreaterThan(0);
+    for (const plugin of plugins) {
+      expect(Array.isArray(plugin.paths)).toBe(true);
+      for (const entry of plugin.paths as string[]) {
+        expect(typeof entry).toBe("string");
+        const resolved = resolveWithinRoot(REPO_ROOT, entry);
+        expect(fs.existsSync(resolved)).toBe(true);
+        expect(fs.statSync(resolved).isFile()).toBe(true);
+      }
+      const capabilities = plugin.capabilities as string[];
+      expect(capabilities).toContain("hooks");
+      expect(capabilities).toContain("rules");
+    }
+  });
+});
+
 describe("version lockstep", () => {
   test.each([
     ...VERSION_LOCKED_MANIFESTS,
