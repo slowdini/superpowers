@@ -37,10 +37,13 @@ Cline support was just added (August 2026). Two halves:
 
 ## Next steps
 
-- Open a PR; note the harness tested (Cline CLI 3.0.51) per AGENTS.md.
+- PR opened: https://github.com/slowdini/slow-powers/pull/266 (base `dev`).
 - Manually confirm the plan gate in an interactive `cline -i` plan-mode
   session (present plan → approve → first `switch_to_act_mode` gets skipped
-  with the hardening instruction).
+  with the hardening instruction) — easiest via a test release, per the
+  maintainer.
+- After merge to `dev`: trigger the Release PR workflow with the next version
+  to ship the Cline plugin (that release doubles as the test release).
 
 ## Active decisions
 
