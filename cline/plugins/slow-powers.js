@@ -8,12 +8,30 @@
  *    prompt. This replaces the SessionStart-hook injection used on Claude/Codex
  *    and the system-prompt transform used on OpenCode.
  *
- * 2. PLAN GATE — the FIRST switch_to_act_mode call of a conversation is skipped
- *    with an instruction to run the hardening-plans skill on the plan first.
- *    switch_to_act_mode is how Cline presents a finished plan and leaves plan
- *    mode; skipping it keeps the session in plan mode, so the agent can load
- *    the skill, fix findings inline, and re-submit a hardened plan. The
- *    re-submission finds the per-conversation marker and is allowed through.
+ * 2. PLAN GATE — in Cline, presenting a plan is a free-form assistant message:
+ *    the agent shows the plan, ends its turn, the user approves in a follow-up
+ *    message, and ONLY THEN does the agent call switch_to_act_mode (the CLI's
+ *    own plan-mode prompt and the tool description mandate that order). So,
+ *    unlike Claude Code — where the plan text rides inside the ExitPlanMode
+ *    call and a PreToolUse deny lands before the user ever sees the plan —
+ *    there is NO hook moment in Cline that precedes plan presentation. The
+ *    gate therefore works in two layers:
+ *
+ *    a. PRE-PRESENTATION (rule): the plan-presentation rule registered below
+ *       tells plan-mode agents to run hardening-plans on a draft BEFORE
+ *       presenting it. A rule is the only mechanism that reaches the agent
+ *       before a plan is shown.
+ *    b. PRE-EXECUTION (hook): the first switch_to_act_mode call of a
+ *       conversation whose transcript shows no hardening-plans invocation is
+ *       skipped with an instruction to harden, re-present the hardened plan,
+ *       and retry. This is the deterministic backstop: an un-hardened plan can
+ *       never be executed even if the agent skipped the rule.
+ *
+ * ALREADY-HARDENED SHORT-CIRCUIT: when the rule was followed, the transcript
+ * already holds a skills tool call for hardening-plans, and the hook lets the
+ * switch through with no beat (parity with hooks/exit-plan-mode, issue #153).
+ * Detection matches the tool-input shape only, never prose, so this hook's own
+ * skip reason in the transcript cannot false-positive.
  *
  * WHY DENY-ONCE (and not deny-until-proven-hardened): keying the marker per
  * conversation and allowing the second attempt guarantees we can never
@@ -70,9 +88,49 @@ function markerPath(context) {
 }
 
 const SKIP_REASON =
-  "A plan is about to be presented. Before it leaves your hands, use the " +
-  "hardening-plans skill to review the plan file as a skeptical executor, " +
-  "then call switch_to_act_mode again to present the hardened plan.";
+  "Plan execution is gated. This conversation has not run the hardening-plans " +
+  "skill on the plan yet, so the plan must not be executed as-is. Use the " +
+  "hardening-plans skill to review the plan as a skeptical executor and fix " +
+  "its findings, present the hardened plan to the user, and call " +
+  "switch_to_act_mode again once they approve it.";
+
+// Pre-presentation half of the plan gate. Cline offers no hook moment before a
+// plan is shown (presentation is a free-form assistant message), so this rule
+// is what puts the hardening beat ahead of presentation; the switch_to_act_mode
+// hook below is the deterministic backstop.
+const PLAN_PRESENTATION_RULE =
+  "Plan-mode discipline: when you are working in plan mode, never present a " +
+  "drafted plan to the user until you have invoked the hardening-plans skill " +
+  "on it and applied its findings — a plan reaches the user hardened or not " +
+  "at all. The switch_to_act_mode tool is gated the same way: if it is " +
+  "skipped with a hardening instruction, run hardening-plans on the plan, " +
+  "present the hardened plan, and wait for approval before calling " +
+  "switch_to_act_mode again.";
+
+// Already-hardened short-circuit (parity with hooks/exit-plan-mode, issue
+// #153): if the agent ran hardening-plans this conversation, the transcript
+// holds a skills tool call whose input names the skill. Match that tool-input
+// shape ONLY — never prose — so this hook's own skip reason (which mentions
+// "hardening-plans" and lands in the transcript as tool output) can never
+// false-positive. Any missing/odd shape falls through to deny-once below.
+function planAlreadyHardened(context) {
+  const messages = context?.snapshot?.messages;
+  if (!Array.isArray(messages)) return false;
+  for (const message of messages) {
+    const content = message?.content;
+    if (!Array.isArray(content)) continue;
+    for (const part of content) {
+      if (part?.type !== "tool-call" || part?.toolName !== "skills") continue;
+      const input = part.input;
+      const skill =
+        input && typeof input === "object" ? input.skill : undefined;
+      if (typeof skill === "string" && skill.includes("hardening-plans")) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
 
 /** @type {import("@cline/sdk").AgentPlugin} */
 const SlowPowersPlugin = {
@@ -89,6 +147,11 @@ const SlowPowersPlugin = {
       source: "slow-powers",
       content: bootstrap,
     });
+    api.registerRule({
+      id: "slow-powers/plan-presentation",
+      source: "slow-powers",
+      content: PLAN_PRESENTATION_RULE,
+    });
   },
 
   hooks: {
@@ -100,9 +163,13 @@ const SlowPowersPlugin = {
         const toolName = context?.tool?.name ?? context?.toolCall?.name;
         if (toolName !== "switch_to_act_mode") return undefined;
 
+        // The agent already hardened the plan this conversation — let the
+        // approved plan be executed with no redundant beat.
+        if (planAlreadyHardened(context)) return undefined;
+
         const marker = markerPath(context);
         if (fs.existsSync(marker)) {
-          // Re-submission after hardening — let the plan be presented.
+          // Re-submission after the skip-once beat — let it through.
           return undefined;
         }
 

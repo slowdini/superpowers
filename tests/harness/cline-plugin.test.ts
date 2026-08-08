@@ -25,10 +25,39 @@ interface FakeApi {
   registerRule: (rule: RuleContribution) => void;
 }
 
+interface ToolCallPart {
+  type: "tool-call";
+  toolCallId?: string;
+  toolName?: string;
+  input?: unknown;
+}
+
+interface TextPart {
+  type: "text";
+  text?: string;
+}
+
+interface ToolResultPart {
+  type: "tool-result";
+  toolCallId?: string;
+  toolName?: string;
+  output?: unknown;
+  isError?: boolean;
+}
+
+interface FakeMessage {
+  role?: string;
+  content?: (ToolCallPart | TextPart | ToolResultPart)[] | string;
+}
+
 interface HookContext {
   tool?: { name?: string };
   toolCall?: { name?: string; input?: unknown };
-  snapshot?: { conversationId?: string; agentId?: string };
+  snapshot?: {
+    conversationId?: string;
+    agentId?: string;
+    messages?: FakeMessage[];
+  };
 }
 
 interface BeforeToolResult {
@@ -91,14 +120,23 @@ describe("cline plugin module", () => {
     expect(typeof plugin.hooks?.beforeTool).toBe("function");
   });
 
-  test("setup registers bootstrap.md as a session rule", () => {
+  test("setup registers bootstrap.md and the plan-presentation rule", () => {
     const registered: RuleContribution[] = [];
     plugin.setup?.({ registerRule: (rule) => registered.push(rule) });
 
-    expect(registered.length).toBe(1);
+    expect(registered.length).toBe(2);
     expect(registered[0].id).toBe("slow-powers/bootstrap");
     expect(registered[0].source).toBe("slow-powers");
     expect(registered[0].content).toContain(BOOTSTRAP_MARKER);
+
+    // The second rule is the pre-presentation half of the plan gate: it is the
+    // only mechanism that reaches the agent before a plan is shown, so it must
+    // demand hardening-plans before presentation.
+    expect(registered[1].id).toBe("slow-powers/plan-presentation");
+    expect(registered[1].source).toBe("slow-powers");
+    expect(registered[1].content).toContain("hardening-plans");
+    expect(registered[1].content.toLowerCase()).toContain("before");
+    expect(registered[1].content.toLowerCase()).toContain("present");
   });
 });
 
@@ -154,5 +192,99 @@ describe("cline plugin plan gate", () => {
       beforeTool({ snapshot: { conversationId: "conv-F" } }),
     ).toBeUndefined();
     expect(beforeTool({ toolCall: {} })).toBeUndefined();
+  });
+});
+
+// Mirrors the runtime's assistant-message shape for a skills-tool invocation.
+function skillsCallMessage(skill: string): FakeMessage {
+  return {
+    role: "assistant",
+    content: [
+      {
+        type: "tool-call",
+        toolCallId: "call_skills_1",
+        toolName: "skills",
+        input: { skill },
+      },
+    ],
+  };
+}
+
+const switchContext = (
+  conversationId: string,
+  messages?: FakeMessage[],
+): HookContext => ({
+  tool: { name: "switch_to_act_mode" },
+  toolCall: { name: "switch_to_act_mode", input: {} },
+  snapshot: { conversationId, messages },
+});
+
+describe("cline plugin already-hardened short-circuit", () => {
+  test("allows switch_to_act_mode when hardening-plans was invoked (bare name)", () => {
+    const result = beforeTool(
+      switchContext("conv-H1", [skillsCallMessage("hardening-plans")]),
+    );
+
+    expect(result).toBeUndefined();
+    // No marker needed: the transcript itself is the proof.
+    expect(markers()).toEqual([]);
+  });
+
+  test("allows it for the namespaced skill name too", () => {
+    const result = beforeTool(
+      switchContext("conv-H2", [
+        skillsCallMessage("slow-powers:hardening-plans"),
+      ]),
+    );
+
+    expect(result).toBeUndefined();
+    expect(markers()).toEqual([]);
+  });
+
+  test("full flow: skip un-hardened, allow after the agent hardens and retries", () => {
+    expect(beforeTool(switchContext("conv-flow"))?.skip).toBe(true);
+    expect(
+      beforeTool(
+        switchContext("conv-flow", [skillsCallMessage("hardening-plans")]),
+      ),
+    ).toBeUndefined();
+  });
+
+  test("does not false-positive on prose mentions of the skill", () => {
+    // A prior skip reason lands in the transcript as tool output and mentions
+    // "hardening-plans" in prose. Only the skills tool-input shape may count,
+    // mirroring hooks/exit-plan-mode's false-positive guard.
+    const result = beforeTool(
+      switchContext("conv-H3", [
+        {
+          role: "assistant",
+          content: [
+            { type: "text", text: "you must use the hardening-plans skill" },
+          ],
+        },
+        {
+          role: "tool",
+          content: [
+            {
+              type: "tool-result",
+              toolCallId: "call_x",
+              toolName: "switch_to_act_mode",
+              output: "use the hardening-plans skill first",
+              isError: true,
+            },
+          ],
+        },
+      ]),
+    );
+
+    expect(result?.skip).toBe(true);
+  });
+
+  test("does not false-positive on other skills invocations", () => {
+    const result = beforeTool(
+      switchContext("conv-H4", [skillsCallMessage("test-driven-development")]),
+    );
+
+    expect(result?.skip).toBe(true);
   });
 });

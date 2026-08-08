@@ -17,7 +17,7 @@ mechanism:
 | Claude   | `hooks/session-start` (SessionStart)   | `hooks/exit-plan-mode` (PreToolUse, deny-once)   |
 | Codex    | shared `hooks/hooks.json` SessionStart | `hooks/codex-stop-plan-mode` (Stop hook)         |
 | OpenCode | `opencode/plugins/slow-powers.js` system-prompt transform | same plugin, `file.edited` event on plan files |
-| Cline    | `cline/plugins/slow-powers.js` `registerRule` | same plugin, `beforeTool` skip-once on `switch_to_act_mode` |
+| Cline    | `cline/plugins/slow-powers.js` `registerRule` (bootstrap + plan-presentation rules) | same plugin, `beforeTool` on `switch_to_act_mode` — pre-execution backstop: transcript short-circuit when hardening-plans already ran, else skip-once |
 
 Claude/Codex hooks are extensionless bash scripts dispatched by the
 `hooks/run-hook.cmd` polyglot (Windows-safe). OpenCode/Cline integrations are
