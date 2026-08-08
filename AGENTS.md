@@ -4,12 +4,20 @@ Slow-powers is a set of software development methodology skills and meta skill-w
 
 ## What lives here
 
-This repo ships Slow-powers across three harnesses:
+This repo ships Slow-powers across four harnesses:
 
 - `skills/` — Skills, assets, and cross-cutting tests
 - `.claude-plugin/` — Claude Code plugin
 - `.codex-plugin/` — OpenAI Codex plugin
 - `opencode/` — OpenCode plugin (`@slowdini/slow-powers-opencode`)
+- `cline/` — Cline plugin (CLI/SDK/Kanban only; declared via the `cline`
+  field in `package.json`, with `skills/` auto-discovered from the package
+  root)
+
+Cline-specific setup for working on this repo also lives at root:
+
+- `.clinerules/` — Cline rules (the Memory Bank custom instructions)
+- `memory-bank/` — Cline Memory Bank files recording ongoing work
 
 ## Editing the right files
 
@@ -69,3 +77,7 @@ bun run check
 (pre-commit runs typecheck + lint-staged; pre-push runs the test suite).
 
 `bun scripts/bump-version.ts <version>` updates every manifest in lockstep.
+
+To test the Cline integration live: `cline plugin install ./ --cwd <scratch-dir>`,
+run a Cline session in the scratch dir, then
+`cline plugin uninstall slow-powers --cwd <scratch-dir>` when done.

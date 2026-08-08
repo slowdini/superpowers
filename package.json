@@ -4,7 +4,21 @@
   "description": "Slow-powers — structured development workflows for coding agents (TDD, debugging, verification, git hygiene)",
   "type": "module",
   "main": "./opencode/plugins/slow-powers.js",
+  "cline": {
+    "plugins": [
+      {
+        "paths": [
+          "./cline/plugins/slow-powers.js"
+        ],
+        "capabilities": [
+          "hooks",
+          "rules"
+        ]
+      }
+    ]
+  },
   "files": [
+    "cline/",
     "opencode/",
     "skills/",
     "bootstrap.md",

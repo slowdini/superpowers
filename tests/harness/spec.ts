@@ -108,6 +108,18 @@ export const HARNESSES: HarnessSpec[] = [
     pathFields: [{ field: "main", kind: "file" }],
     hooks: null,
   },
+  {
+    name: "Cline",
+    // Cline has no standalone manifest either; the package.json `cline` field
+    // declares plugin entry points, and skills/ is auto-discovered from the
+    // package root. The nested `cline.plugins[].paths[]` shape doesn't fit
+    // the dotted-string pathFields machinery, so entry-point resolution is
+    // asserted in a dedicated describe block in manifests.test.ts.
+    manifest: "package.json",
+    requiredFields: ["name", "version", "cline"],
+    pathFields: [],
+    hooks: null,
+  },
 ];
 
 export const BOOTSTRAP_MARKER = "<EXTREMELY-IMPORTANT>";
