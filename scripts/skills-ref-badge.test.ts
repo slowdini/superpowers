@@ -1,5 +1,12 @@
 import { describe, expect, test } from "bun:test";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { buildBadgeJson } from "./skills-ref-badge";
+
+const skillsRefWorkflow = readFileSync(
+  join(import.meta.dir, "..", ".github/workflows/skills-ref.yml"),
+  "utf8",
+);
 
 describe("skills-ref-badge buildBadgeJson", () => {
   test("all skills valid -> green score badge", () => {
@@ -28,5 +35,13 @@ describe("skills-ref-badge buildBadgeJson", () => {
       message: "unavailable",
       color: "lightgrey",
     });
+  });
+});
+
+describe("skills-ref badge workflow", () => {
+  test("authenticates protected-branch pushes with the release token", () => {
+    expect(skillsRefWorkflow).toMatch(
+      /- uses: actions\/checkout@v4\n\s+with:\n\s+token: \$\{\{ secrets\.RELEASE_PR_TOKEN \}\}/,
+    );
   });
 });
