@@ -53,14 +53,14 @@ rebuttal you only produce when someone argued against it.
 ```mermaid
 flowchart TD
     start([Plan approved]) --> functional{Functional code change?<br/>adds or changes runtime behavior}
-    functional -->|yes| tdd[REQUIRED NEXT:<br/>slow-powers:test-driven-development]
+    functional -->|yes| tdd[REQUIRED NEXT:<br/>slow-powers:working-with-tdd]
     functional -->|no| nonmech{Non-mechanical &amp; non-functional?<br/>refactor, file move, docs/skill rewrite}
     nonmech -->|yes| isolation[REQUIRED NEXT:<br/>slow-powers:working-in-isolation]
     nonmech -->|no| none[No required skill —<br/>follow your instincts]
 ```
 
 * **Functional code change** — adds or changes runtime behavior.
-  > **REQUIRED NEXT SKILL:** You must complete `slow-powers:test-driven-development` next, for the implementation phase. The plan should carry a tests section so the reader can see *what* will be verified, but *when* tests get written is implementer discipline TDD owns at execution time — not plan structure. (TDD in turn requires `slow-powers:working-in-isolation`, so isolation still happens on this path.)
+  > **REQUIRED NEXT SKILL:** You must complete `slow-powers:working-with-tdd` next, for the implementation phase. The plan should carry a tests section so the reader can see *what* will be verified, but *when* tests get written is implementer discipline TDD owns at execution time — not plan structure. (TDD in turn requires `slow-powers:working-in-isolation`, so isolation still happens on this path.)
 * **Non-mechanical, non-functional change** — a structural code change (refactor, file move), a docs or skill change, or any other substantive update that doesn't alter runtime behavior.
   > **REQUIRED NEXT SKILL:** You must complete `slow-powers:working-in-isolation` next, before you start. TDD has no green to chase here, but the work still collides with other branches if it isn't isolated.
 * **Informational or trivial/mechanical** — the plan is to research, run commands, or make a trivial/mechanical fix (merge-conflict cleanup, test fixups, typos). No required next skill; follow your instincts.
@@ -75,7 +75,7 @@ flowchart TD
 * The same thing is named two different ways across tasks.
 * You wrote "similar to Task N" instead of restating the content.
 * TDD doesn't fit the work, so you're about to skip straight to coding with no skill at all — non-functional work still routes to `slow-powers:working-in-isolation`; only the informational/trivial branch frees you.
-* Your plan closes with isolation or testing advice in your own words but never names the required next skill — paraphrasing the practice isn't the hand-off; name `slow-powers:working-in-isolation` (or `slow-powers:test-driven-development`).
+* Your plan closes with isolation or testing advice in your own words but never names the required next skill — paraphrasing the practice isn't the hand-off; name `slow-powers:working-in-isolation` (or `slow-powers:working-with-tdd`).
 
 If you hit a Red Flag: stop and fix it before the plan leaves your hands. Approval comes from a plan that holds up to scrutiny, not from optimism.
 

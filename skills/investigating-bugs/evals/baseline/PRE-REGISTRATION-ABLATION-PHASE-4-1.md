@@ -4,6 +4,11 @@ Written **before** any dispatch, 2026-07-28. Frozen on commit. **Not yet dispatc
 the run happens only after the operator confirms a pre-flight summary (cases, mode,
 models, cost, guard).
 
+> **Naming note:** This frozen pre-registration predates the
+> `test-driven-development` → `working-with-tdd` rename. The quoted diff below
+> remains verbatim; any future dispatch requires a new pre-registration using
+> the current skill name.
+
 ## What this run is
 
 The first **ablation run** under the behavior-decomposition process (see

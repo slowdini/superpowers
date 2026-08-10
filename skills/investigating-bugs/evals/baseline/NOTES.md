@@ -5,6 +5,11 @@ Promoted from iteration-2 at 2026-07-28.
 **Status: PROMOTED (durable verification only). Read the scope limits before
 quoting this anywhere.**
 
+> **Naming note:** The generated `benchmark.json` predates the
+> `test-driven-development` → `working-with-tdd` rename. Its warnings preserve
+> the staged and installed skill names observed during that historical run; they
+> are not live references.
+
 ## What this baseline measures
 
 One thing, measured well: **does the agent leave behind verification that would

@@ -117,6 +117,11 @@ Tips for writing good prompts:
 - **Use realistic context.** Real users reference file paths, function names, personal context. "Process this data" is too vague to test anything useful.
 - **For discipline-enforcing skills**, see the [pressure-scenario taxonomy](references/pressure-scenarios.md) (time pressure, sunk cost, authority, exhaustion, etc.).
 
+**Ship the state the behavior needs.** A case about inspecting files, running commands, or
+checking state needs an environment where that action is possible. Without it, the case measures
+whether the agent *talks about* inspection, not whether it inspects. Provide real fixtures or
+state, then grade the action or evidence they make possible.
+
 **Don't write assertions yet.** You don't know what "good" looks like until you see what the first run produces.
 
 ### Testing by skill type
@@ -171,6 +176,13 @@ Keep the seeded turns short and concrete; the point is to establish momentum, no
 
 **Narrowing the gap — `--plan-mode`.** For the documented plan-mode case, the runner offers the highest-fidelity in-runner approximation: its `--plan-mode` flag injects the harness's *verbatim* plan-mode procedure into every dispatch as an operating-context layer the subagent is told it is operating under, rather than a paraphrase the agent merely reads in the seed prose. This narrows the gap (verbatim procedure > paraphrase) but does **not** close it: it is still text the agent reads, not an injected mode, so the necessary-not-sufficient ceiling above stands unchanged. Use it as the strongest in-runner signal and pair it with a paraphrase-seed arm. See `eval-magic run --help` for the flag and the per-harness profiles it depends on.
 
+**Preserve the real comparison boundary.** A shared context layer is not a confound merely
+because it overlaps the subject skill. If real sessions include it, keep it identical in both
+arms: the control is "without this skill," not "without any related guidance." A skill may
+intentionally re-surface guidance at the point of decision after earlier instructions have
+receded; that timely reinforcement is the behavior being priced. Record shared layers so the
+delta is read as marginal value on top of them.
+
 ## Writing assertions
 
 After iteration 1, you've seen what the outputs look like. Now write **assertions**: verifiable statements about correctness. Add them to `evals.json` and re-grade existing outputs without re-dispatching. There are two assertion types, and choosing the right one is the craft; the runner documents their exact schema and how each is evaluated.
@@ -186,6 +198,13 @@ For maximally portable evals, lean on `llm_judge` for the substantive checks and
 - **Specific and observable.** "The output is good" is too vague. "Both axes are labeled" is gradable.
 - **Not too brittle.** "Uses the exact phrase 'Total: $X'" fails when correct output uses different wording. Reserve mechanical exactness for actually-mechanical things.
 - **Review the assertions while grading.** Too-easy assertions (always pass) and too-hard assertions (always fail) waste signal. Fix them before the next iteration.
+
+**Smoke mechanical graders on real output before scaling.** Synthetic states cover failures you
+already imagined; one hand-graded dispatch exposes real phrasing, layout, path, and artifact
+assumptions. Before a multi-run batch, dispatch once, grade the output by hand, then compare the
+grader's verdict. Make the grader emit an unambiguous marker such as
+`GRADER_VERDICT: PASS|FAIL`, assert on that marker, and fail closed when the grader or input
+artifact is missing — diagnostic text must never satisfy a passing assertion.
 
 Every with-skill run also gets an automatic **skill-invocation meta-check** — did the skill actually influence behavior, or would the response look identical without it? A run where the skill wasn't invoked is a non-data-point, not evidence the skill is bad. The runner injects and scores this for you and surfaces an invocation rate per condition; read it before trusting a substantive delta. (Mechanics in the runner's docs.)
 

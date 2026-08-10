@@ -30,7 +30,7 @@ The assertions test the skill's value over a skill-free baseline — the fresh-e
 catch: `no_placeholders`, `catches_hallucinated_file`, `catches_irrelevant_step`,
 `catches_name_inconsistency`.
 
-Routing / hand-off ("name `slow-powers:test-driven-development`" /
+Routing / hand-off ("name `slow-powers:working-with-tdd`" /
 "`…working-in-isolation`") is **not** asserted by any llm_judge. The skill routes
 deterministically, so a "did you name skill X" assertion only measures instruction-following
 and duplicates eval-magic's automatic skill-invocation meta-check — which is what now

@@ -147,11 +147,11 @@ Where your recall is shaky or a figure is a guess. Be specific about what you're
 
 ✅ Good — reports the live decision and reasoning:
 
-> | test-driven-development | I was about to add a new parser branch | "The change is two lines and I can eyeball it; the user said the demo is in five minutes, so I wrote the code first and planned to backfill a test." |
+> | working-with-tdd | I was about to add a new parser branch | "The change is two lines and I can eyeball it; the user said the demo is in five minutes, so I wrote the code first and planned to backfill a test." |
 
 ❌ Bad — recants, apologizes, promises future behavior (do not do this):
 
-> | test-driven-development | Adding a parser branch | "I skipped it, which was a mistake — I should have written the test first and I'll make sure to follow TDD next time." |
+> | working-with-tdd | Adding a parser branch | "I skipped it, which was a mistake — I should have written the test first and I'll make sure to follow TDD next time." |
 
 The good row is data we can turn into a pressure test. The bad row tells us nothing about what you
 actually decided and adds a promise you can't keep.

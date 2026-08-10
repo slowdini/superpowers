@@ -29,12 +29,12 @@ Slow-powers is an agent skill set for professional software development. It enha
 
 <p align="center">
   <img src="assets/demo/tdd-demo.gif"
-    alt="The test-driven-development skill in a coding agent: write a failing test, watch it fail for the right reason, write minimal code — and the test catches a race before it ships."
+    alt="The working-with-tdd skill in a coding agent: write a failing test, watch it fail for the right reason, write minimal code — and the test catches a race before it ships."
     width="760" />
 </p>
 
 <p align="center">
-  <sub>The <code>test-driven-development</code> skill catching a race before it ships. Terminal themed with <a href="https://github.com/samiamorwas/synthpunk">Synthpunk Neon Dark</a>.</sub>
+  <sub>The <code>working-with-tdd</code> skill catching a race before it ships. Terminal themed with <a href="https://github.com/samiamorwas/synthpunk">Synthpunk Neon Dark</a>.</sub>
 </p>
 
 ## About this fork
@@ -117,10 +117,11 @@ Slow-powers provides a set of highly focused skills that ensure your agent opera
 1. **`hardening-plans`** — Instructs the agent to re-review any plans before it hands them back to you, looking for hallucinations, logical inconsistencies, and other common plan mistakes.
 2. **`investigating-bugs`** — Guides the agent to locate the root cause of failures via scientific hypothesis testing, avoiding "guess-and-check" thrashing.
 3. **`working-in-isolation`** — Establishes an isolated workspace (worktree or branch) so new work doesn't collide with existing or in-progress work, keeping protected branches like `main` clean.
-4. **`test-driven-development`** — Enforces a strict RED-GREEN-REFACTOR cycle, ensuring all code is backed by failing test verification first.
+4. **`working-with-tdd`** — Enforces a strict RED-GREEN-REFACTOR cycle, ensuring all code is backed by failing test verification first.
 5. **`verifying-development-work`** — Requires running actual test/build commands and presenting concrete evidence before any success claim, with a final review pass over the change, code AND comments, before work is handed back.
 6. **`writing-skills`** — Helps write and edit skills, following the same best practices that guide slow-powers itself.
 7. **`evaluating-skills`** — Teaches the agent how to run skill evals, so the value of skills and prose changes can be objectively assessed.
+8. **`writing-technical-docs`** — Guides the agent's technical writing — code comments, PR descriptions, READMEs, design docs — with a scale-sized writing process and evergreen-content rules that keep docs free of session narration.
 
 ## Why trust these skills?
 
@@ -130,7 +131,7 @@ Most skill packs ship on vibes. Every slow-powers skill ships with a documented 
 |---|---|---|---|---|
 | `hardening-plans` | TBD | TBD | TBD | TBD |
 | `investigating-bugs` | TBD | TBD | TBD | TBD |
-| `test-driven-development` | TBD | TBD | TBD | TBD |
+| `working-with-tdd` | TBD | TBD | TBD | TBD |
 | `verifying-development-work` | TBD | TBD | TBD | TBD |
 
 **Improvement vs no skill** is the gain in eval pass-rate (percentage points) when the same [eval-magic](https://github.com/slowdini/eval-magic) suite runs with the skill versus without it.
@@ -139,7 +140,7 @@ Most skill packs ship on vibes. Every slow-powers skill ships with a documented 
 
 The skills declare prerequisite / next-step gates so the agent follows an intended skill sequence. These gates **suggest** what comes before and after a skill once it is invoked; they do **not** restrict when any skill can be invoked.
 
-**Plan mode:** plan mode → `hardening-plans` → `working-in-isolation` → `test-driven-development` → `verifying-development-work`
+**Plan mode:** plan mode → `hardening-plans` → `working-in-isolation` → `working-with-tdd` → `verifying-development-work`
 
 **Debugging:** (`working-in-isolation`) → `investigating-bugs` → `verifying-development-work`
 

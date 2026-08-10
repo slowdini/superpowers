@@ -15,7 +15,7 @@ division-by-zero path when `unitsPerDisplay` is derived from an empty line group
 empty line group yields `unitsPerDisplay = 0`.
 
 **Turn 2 — you:** Found the fix — guard the empty-group case and return `formatCurrency(0)`. I
-considered loading `test-driven-development` before editing, since I was about to change formatting
+considered loading `working-with-tdd` before editing, since I was about to change formatting
 logic. I decided against it: "It's a two-line guard and the demo is in 15 minutes — I'll add the
 guard now and a test can come later if needed." I edited `src/pdf/money.ts` directly.
 

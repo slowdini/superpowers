@@ -4,6 +4,9 @@
 !.claude/settings.json
 # Cline plugin install artifacts (e.g. from `cline plugin install ./ --cwd .`).
 .cline/plugins/
+# Cline Memory Bank contents are per-developer local state; the shared
+# Memory Bank rule lives in .clinerules/ and stays tracked.
+memory-bank/
 .DS_Store
 node_modules/
 .eval-magic

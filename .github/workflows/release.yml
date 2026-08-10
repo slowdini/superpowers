@@ -54,7 +54,7 @@ jobs:
             --json body \
             --jq '.[0].body // ""')
 
-          if [ -n "$PR_BODY" ] && ! echo "$PR_BODY" | grep -q "Replace this paragraph"; then
+          if [ -n "$PR_BODY" ] && ! echo "$PR_BODY" | grep -q "release-notes:todo"; then
             echo "Using release PR body for notes."
             printf '%s\n' "$PR_BODY" > /tmp/release-notes.md
           else

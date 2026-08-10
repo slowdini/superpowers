@@ -1,4 +1,4 @@
-# Baseline — test-driven-development
+# Baseline — working-with-tdd
 
 Committed reference output from a canonical eval run. Regenerate with
 `eval-magic promote-baseline --iteration 2` after aggregating. The ephemeral workspace (run records, timing,
@@ -21,4 +21,3 @@ Files:
 - `benchmark.json` — aggregate pass-rate / duration / token deltas.
 - `grading/<eval-id>__<condition>.json` — per-run assertion results and judge rationales.
 - `NOTES.md` — operator-authored observations for this baseline (never overwritten by promote).
-

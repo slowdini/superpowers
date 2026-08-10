@@ -282,7 +282,7 @@ describe("cline plugin already-hardened short-circuit", () => {
 
   test("does not false-positive on other skills invocations", () => {
     const result = beforeTool(
-      switchContext("conv-H4", [skillsCallMessage("test-driven-development")]),
+      switchContext("conv-H4", [skillsCallMessage("working-with-tdd")]),
     );
 
     expect(result?.skip).toBe(true);

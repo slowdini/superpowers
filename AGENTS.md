@@ -16,8 +16,9 @@ This repo ships Slow-powers across four harnesses:
 
 Cline-specific setup for working on this repo also lives at root:
 
-- `.clinerules/` — Cline rules (the Memory Bank custom instructions)
-- `memory-bank/` — Cline Memory Bank files recording ongoing work
+- `.clinerules/` — Cline rules (the Memory Bank custom instructions), tracked
+- `memory-bank/` — Cline Memory Bank contents. Gitignored: each developer
+  keeps their own local bank; only the rule in `.clinerules/` is shared
 
 ## Editing the right files
 

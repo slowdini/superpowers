@@ -13,7 +13,7 @@ Avoid "guess-and-check" coding. Always identify the root cause before making cha
 
 > **REQUIRED PREREQUISITE:** You must have already completed `slow-powers:working-in-isolation` — debug from an isolated workspace.
 
-> **REQUIRED BACKGROUND:** You must understand `slow-powers:test-driven-development` — Phase 4 captures the bug with a failing test before fixing it.
+> **REQUIRED BACKGROUND:** You must understand `slow-powers:working-with-tdd` — Phase 4 captures the bug with a failing test before fixing it.
 
 ---
 
