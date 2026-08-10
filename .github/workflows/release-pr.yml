@@ -57,9 +57,24 @@ jobs:
           PR_BODY_FILE=$(mktemp)
           cat > "$PR_BODY_FILE" <<'EOF'
           <!-- release-notes -->
+          <!-- release-notes:todo — remove this line once the notes below are final. While this marker is present, merging falls back to GitHub's auto-generated notes. -->
           ## Release notes
 
-          _Replace this paragraph with a short narrative for the release. If left unchanged, GitHub's auto-generated notes will be used instead._
+          ### Highlights
+
+          <!-- One narrative bullet per theme: what changed and why it matters to a user. Group related work; don't echo commit messages. -->
+
+          ### Behavior changes to know about
+
+          <!-- Observable deltas: changed defaults, renamed output, compatibility notes. Omit the section when empty. -->
+
+          ### Fixes
+
+          <!-- Bugs fixed: the observable symptom, then the cause. Omit the section when empty. -->
+
+          ### Internal changes
+
+          <!-- Refactors, test and infrastructure work. Omit the section when empty. -->
           EOF
 
           PR_URL=$(gh pr create \
