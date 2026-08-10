@@ -1,6 +1,6 @@
 # Testing Anti-Patterns
 
-**Load this reference when:** a test you're writing or changing matches one of the anti-patterns below — the `test-driven-development` SKILL's "Testing anti-patterns" table points here — or any time you're adding mocks or other test scaffolding. Each anti-pattern carries a **Gate**: check it before you commit the test.
+**Load this reference when:** a test you're writing or changing matches one of the anti-patterns below — the `working-with-tdd` SKILL's "Testing anti-patterns" table points here — or any time you're adding mocks or other test scaffolding. Each anti-pattern carries a **Gate**: check it before you commit the test.
 
 ## Overview
 

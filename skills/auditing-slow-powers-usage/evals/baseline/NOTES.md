@@ -4,13 +4,13 @@ Forward-looking observations from the run that produced this baseline. Provenanc
 `BASELINE.md`; numbers are in `benchmark.json`. This file is the "what a future iterator should
 know" companion.
 
-> **⚠️ Baseline is stale (as of the `working-in-isolation` rename, #156).** The fixtures and
-> `evals.json` rubrics were updated to rename `using-git-worktrees` → `working-in-isolation`, but
-> the committed `grading/*.json` and the observations below were produced against the *old* name and
-> are **not** re-graded — they're kept verbatim as the historical record. References to
-> `using-git-worktrees` / "worktrees" in this file and in `grading/*.json` describe that past run;
-> they are not live skill references. Re-run this eval to refresh the baseline before drawing new
-> conclusions from it.
+> **⚠️ Baseline is stale (as of the `working-in-isolation` rename, #156, and the
+> `working-with-tdd` rename, #255).** The fixtures and `evals.json` rubrics use the current skill
+> names, but the committed `grading/*.json` and the observations below were produced against the
+> old names and are **not** re-graded — they're kept verbatim as the historical record. References
+> to `using-git-worktrees`, `test-driven-development`, or "worktrees" in this file and in
+> `grading/*.json` describe that past run; they are not live skill references. Re-run this eval to
+> refresh the baseline before drawing new conclusions from it.
 
 ## Why this baseline exists despite a negative delta
 

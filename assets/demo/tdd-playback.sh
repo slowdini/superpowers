@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Re-enactment of a REAL Claude Code test-driven-development session (RED -> GREEN).
+# Re-enactment of a REAL Claude Code TDD session (RED -> GREEN).
 #
 # Deterministic: pacing lives here (the "actor"), VHS is the "camera".
 # Colors use base-16 ANSI (30-37 / 90-97 + bold) so the terminal theme drives them
@@ -29,7 +29,7 @@ pause 0.4
 human "for your own account, read the api key from the session instead of refetching it"
 pause 0.9
 
-bullet "Using ${B}${CYAN}test-driven-development${RST}."
+bullet "Using ${B}${CYAN}working-with-tdd${RST}."
 pause 0.8
 
 # ---------- RED ----------

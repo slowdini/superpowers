@@ -4,6 +4,10 @@ Author-maintained companion to the baseline. Not provenance (see `BASELINE.md`)
 and not results (see `benchmark.json`). These are observations for whoever
 iterates next.
 
+> **Naming note:** This run predates the `test-driven-development` →
+> `working-with-tdd` rename. Historical workspace paths below remain verbatim, and
+> this baseline does not measure whether the new name changes skill discovery.
+
 ## This baseline — iteration-2 (Mode B revision; #234/#236 validation)
 
 Promoted from the **iteration-2** tightening run: a Mode B (revision) measurement of
