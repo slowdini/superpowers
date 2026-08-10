@@ -121,6 +121,7 @@ Slow-powers provides a set of highly focused skills that ensure your agent opera
 5. **`verifying-development-work`** — Requires running actual test/build commands and presenting concrete evidence before any success claim, with a final review pass over the change, code AND comments, before work is handed back.
 6. **`writing-skills`** — Helps write and edit skills, following the same best practices that guide slow-powers itself.
 7. **`evaluating-skills`** — Teaches the agent how to run skill evals, so the value of skills and prose changes can be objectively assessed.
+8. **`writing-technical-docs`** — Guides the agent's technical writing — code comments, PR descriptions, READMEs, design docs — with a scale-sized writing process and evergreen-content rules that keep docs free of session narration.
 
 ## Why trust these skills?
 

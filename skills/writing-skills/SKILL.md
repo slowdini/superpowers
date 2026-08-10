@@ -296,6 +296,12 @@ it. See `slow-powers:evaluating-skills` ("Seeding conversation context") and its
 ## Further reading
 
 - `slow-powers:evaluating-skills` — phase 2: measuring whether the draft works
+- `slow-powers:writing-technical-docs` — the general technical-writing skill
+  (comments, PR descriptions, READMEs, design docs). This skill is the doc-type
+  authority for skills: it owns skill structure, frontmatter, and skill-specific
+  prose conventions. Where this skill is silent about the prose itself — clarity,
+  concision, sentence construction — writing-technical-docs' style principles apply.
+  On any conflict, this skill wins.
 - [Persuasion principles](references/persuasion-principles.md) — research foundation for discipline language
 - [agentskills.io best-practices](https://agentskills.io/skill-creation/best-practices) and
   [optimizing-descriptions](https://agentskills.io/skill-creation/optimizing-descriptions) —

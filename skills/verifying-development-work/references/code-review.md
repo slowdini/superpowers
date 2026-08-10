@@ -77,7 +77,10 @@ Close with a one-line verdict.
 
 ## Clean the comments while reviewing
 
-Comments are part of the diff. Keep only comments that earn their place:
+Comments are part of the diff — and they're documentation, so the
+`slow-powers:writing-technical-docs` skill's evergreen rules apply here at full strength:
+comments are re-read for months and must describe the code, not the session that
+wrote them. Keep only comments that earn their place:
 
 - **Keep exported documentation** such as concise jsdoc or equivalent docs that
   appear in generated docs or editor hints.
@@ -89,6 +92,10 @@ Comments are part of the diff. Keep only comments that earn their place:
   what the next line already says.
 - **Extract the kernel** from mixed comments: keep the one non-obvious reason,
   rewritten tightly if needed, and delete the surrounding narration.
+
+When a comment you're keeping or writing needs structure or phrasing guidance —
+doc-block conventions, evergreen wording — `slow:powers:writing-technical-docs` owns it;
+its references cover doc types and formatting.
 
 Comment-only edits do not change behavior. They do not require re-verification
 by themselves, but they should happen here so the returned diff is ready for a
