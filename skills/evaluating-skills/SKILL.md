@@ -3,7 +3,7 @@ name: evaluating-skills
 description: Use when testing whether a new skill improves agent behavior, or when validating a change to an existing skill's language.
 ---
 
-# Evaluating Skills
+# Evaluating skills
 
 Skill development has two phases: **drafting** (`slow-powers:writing-skills`) and **evaluation** (this skill). This skill owns the *craft* of evaluation — deciding whether a change needs measuring, designing test cases, devising pressure-testing scenarios, writing assertions, and reading results. The *mechanics* of actually running an eval — building the workspace, staging skills, dispatching subagents, grading, aggregating — are owned by a dedicated tool, **[eval-magic](https://github.com/slowdini/eval-magic)**, which ships as a dependency-less prebuilt binary you invoke as `eval-magic`. See [Running the eval](#running-the-eval) for the hand-off.
 
@@ -77,7 +77,7 @@ Before building the workspace and dispatching anything, STOP and present the use
 
 Do not dispatch until the user confirms *this summary*. An earlier "run the eval" is not confirmation — the summary may reveal a wrong mode, the wrong model, or a missing guard the user never intended. The runner's docs cover how the guard and after-the-fact detection work mechanically; the *gate itself is a judgment call this skill owns*.
 
-### Red Flags — STOP before dispatching
+### Red flags — STOP before dispatching
 
 - About to dispatch subagents without showing the user the run summary first
 - Running on a guard-capable harness without the guard and without an explicit opt-out from the user
