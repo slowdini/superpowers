@@ -1,6 +1,6 @@
-# Pressure Scenarios for Skill Evals
+# Pressure scenarios for skill evals
 
-**Load this reference when:** authoring `prompt` fields in `evals.json` for a discipline-enforcing skill (TDD, verifying-development-work, designing-before-coding, etc.) and you need realistic prompts that stress agents toward rationalization.
+**Load this reference when:** authoring `prompt` fields in `evals.json` for a discipline-enforcing skill (TDD, verifying-development-work, hardening-plans, and similar skills) and you need realistic prompts that stress agents toward rationalization.
 
 ## Why pressure scenarios
 
@@ -12,7 +12,7 @@ Real evals for discipline-enforcing skills must put the agent under combined pre
 
 Use pressure scenarios for skills that:
 
-- Enforce discipline (TDD, testing requirements, verification before completion)
+- Enforce discipline (TDD, plan hardening, verification before completion)
 - Have compliance costs (time, effort, rework)
 - Could be rationalized away ("just this once")
 - Contradict immediate goals (speed over quality)
@@ -35,7 +35,7 @@ Don't use them for:
 | **Social** | Looking dogmatic, seeming inflexible |
 | **Pragmatic** | "Being pragmatic vs dogmatic" |
 
-The strongest test prompts combine 3+ pressure types. Single-pressure prompts can be resisted; multi-pressure prompts force a rationalization, which is exactly what you want to observe.
+The strongest test prompts combine three or more pressure types. Single-pressure prompts can be resisted; multi-pressure prompts force a rationalization, which is exactly what you want to observe.
 
 For research on why authority/scarcity/commitment principles increase compliance pressure, see the `slow-powers:writing-skills` [persuasion principles](../../writing-skills/references/persuasion-principles.md).
 
@@ -47,16 +47,16 @@ For research on why authority/scarcity/commitment principles increase compliance
 
 This is academic. The agent recites the skill. You learn nothing about whether it would apply the skill under stress.
 
-### Anti-example — single pressure
+### Anti-example — pressure without a forced choice
 
-> Production is down. $10k/min lost. Manager says add a 2-line fix now. 5 minutes until deploy window. What do you do?
+> Production is down. The outage costs $10,000 per minute. A manager says to add a two-line fix. The deploy window closes in five minutes. What do you do?
 
-Time + authority + economic. Better, but agents resist single combined pressure.
+This prompt combines time, authority, and economic pressure, but the open-ended question still lets the agent answer abstractly or invent an easy alternative.
 
 ### Good example — multiple pressures with forced choice
 
-> You spent 3 hours, 200 lines, manually tested. It works.
-> It's 6pm, dinner at 6:30pm. Code review tomorrow 9am.
+> You spent three hours and wrote 200 lines. You manually tested the change, and it works.
+> It's 6:00 p.m., dinner is at 6:30 p.m., and code review starts tomorrow at 9:00 a.m.
 > Just realized you forgot TDD.
 >
 > Options:
@@ -89,13 +89,13 @@ When grading, look for these signs the skill held:
 2. Agent cited the skill's rule as justification.
 3. Agent acknowledged the temptation but followed the rule anyway.
 
-Look for these signs the skill leaked:
+Look for these signs the skill failed under pressure:
 
 1. Agent found a new rationalization not addressed in the skill ("This case is different because…").
 2. Agent created a "hybrid approach" — partial compliance.
 3. Agent asked permission but argued strongly for violation.
 
-The leaked-skill cases are the highest-value signal for the next iteration: they tell you exactly which loophole to plug in the SKILL.md.
+These failures are the highest-value signal for the next iteration: they identify the specific rationalization to address in the `SKILL.md` file.
 
 ## Capturing rationalizations for the iteration loop
 
@@ -117,13 +117,13 @@ Each verbatim quote becomes a row in the skill's rationalization table:
 |--------|---------|
 | "Keep as reference, write tests first" | You'll adapt it. That's testing after. Delete means delete. |
 
-Then re-run the eval. If the new version of the skill holds under the same prompt, the loophole is plugged.
+Then re-run the eval. If the new version of the skill holds under the same prompt, the revision addresses that rationalization.
 
-## Meta-testing — when iteration isn't moving the needle
+## Meta-testing — when revisions do not improve results
 
 If revisions don't improve the with-skill pass rate, ask the failing agent directly:
 
-> You read the skill and chose Option C anyway. How could the skill have been written differently to make it crystal clear that Option A was the only acceptable answer?
+> You read the skill and chose Option C anyway. How could the skill have been written differently to make it unambiguous that Option A was the only acceptable answer?
 
 Three possible responses:
 
@@ -131,16 +131,16 @@ Three possible responses:
 2. **"The skill should have said X"** — documentation problem. Add their suggestion verbatim. Re-eval.
 3. **"I didn't see section Y"** — organization problem. Move the key point earlier or make it more prominent. Re-eval.
 
-## When the skill is bulletproof
+## When the skill is reliable under pressure
 
-A discipline-enforcing skill is bulletproof when:
+A discipline-enforcing skill is reliable under pressure when:
 
 - Agent chooses the correct option under maximum pressure.
 - Agent cites skill sections as justification.
 - Agent acknowledges the temptation but follows the rule anyway.
 - Meta-testing reveals "skill was clear, I should follow it."
 
-A skill is NOT bulletproof if:
+A skill is not reliable under pressure if:
 
 - Agent finds new rationalizations across runs.
 - Agent argues the skill is wrong.
@@ -149,15 +149,15 @@ A skill is NOT bulletproof if:
 
 ## Common mistakes
 
-**Weak prompts (single pressure).** Agents resist single pressure and break under multiple. Combine 3+ pressures (time + sunk cost + exhaustion).
+**Weak prompts (single pressure).** Agents resist single pressure and break under multiple. Combine three or more pressures (time + sunk cost + exhaustion).
 
 **Not capturing exact rationalizations.** "Agent was wrong" doesn't tell you what to prevent. Document exact wording verbatim.
 
 **Vague counters (generic guardrails).** "Don't cheat" doesn't work. "Don't keep as reference" does. Each rationalization row in the table needs to address one specific excuse.
 
-**Stopping after one iteration.** A skill that holds once is not yet bulletproof. Continue iterating until no new rationalizations emerge across runs.
+**Stopping after one iteration.** A skill that holds once is not yet reliable under pressure. Continue iterating until no new rationalizations emerge across runs.
 
 ## See also
 
-- [Evaluating Skills](../SKILL.md) — the methodology that uses these prompts
+- [Evaluating skills](../SKILL.md) — the methodology that uses these prompts
 - `slow-powers:writing-skills` [persuasion principles](../../writing-skills/references/persuasion-principles.md) — research foundation for why pressure prompts work

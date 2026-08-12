@@ -3,7 +3,7 @@ name: writing-skills
 description: Use when creating new skills or editing existing skills. Drafting only; see slow-powers:evaluating-skills for measuring whether the draft works.
 ---
 
-# Writing Skills
+# Writing skills
 
 ## Overview
 
@@ -80,7 +80,7 @@ Use these terms as the canonical vocabulary reference.
 | **Capability** | A described action ("search file contents") | A platform tool name ("Grep") |
 | **Load-bearing property** | A property a capability must have for the workflow to work | (no shorter form) |
 
-## SKILL.md structure
+## `SKILL.md` structure
 
 ```markdown
 ---
@@ -88,10 +88,10 @@ name: skill-name-with-hyphens
 description: Use when [specific triggering conditions and symptoms]
 ---
 
-# Skill Name
+# Skill name
 
 ## Overview        — what is this? Core principle in 1-2 sentences.
-## When to use     — symptoms and use cases; when NOT to use.
+## When to use     — symptoms and use cases; when not to use.
 ## Core pattern    — before/after comparison (techniques/patterns).
 ## Quick reference — table or bullets for scanning common operations.
 ## Implementation  — inline code for simple patterns; link a file for heavy reference.
@@ -106,7 +106,7 @@ description: Use when [specific triggering conditions and symptoms]
 
 ## Building blocks
 
-The blocks below help structure a SKILL.md file. Use the ones that fit - not every skill
+The blocks below help structure a `SKILL.md` file. Use the ones that fit — not every skill
 needs all of them. These aren't limiters, and your skill should contain the content it needs.
 
 Each block does one job:
@@ -217,7 +217,7 @@ Use the skill's qualified name with an explicit requirement marker:
 
 Don't repeat what another skill says — link to it.
 
-## Conciseness & file organization
+## Conciseness and file organization
 
 Once a skill loads, every token competes with conversation history. Keep the body lean: aim for
 **≤200 lines** for frequently-loaded internal skills, and treat **500 lines / 5,000 tokens** as
@@ -225,13 +225,13 @@ the hard ceiling for any skill. Move details to tool help ("Run `<tool> --help` 
 listing every flag), cross-reference instead of repeating, and compress examples to one good
 pair.
 
-Use progressive disclosure for anything heavy: SKILL.md is the always-loaded overview; bulky
+Use progressive disclosure for anything heavy: the `SKILL.md` file is the always-loaded overview; bulky
 material lives in separate files the agent loads on demand. Tell the agent *when* to load each
 ("Read `references/api-errors.md` if the API returns non-200") rather than a generic "see references/".
 
 ### Skill directory layout
 
-A skill always has `SKILL.md`. Add any of these peer directories when their contents are needed:
+A skill always has a `SKILL.md` file. Add any of these peer directories when their contents are needed:
 
 | Directory | Put here | Guidance |
 |---|---|---|
@@ -255,10 +255,9 @@ Create companion files when they serve one of the roles above, not merely to sho
 
 ## Rationalization-proofing for discipline skills
 
-Skills that enforce discipline (TDD, verifying-development-work, designing-before-coding)
+Skills that enforce discipline (TDD, verifying-development-work, hardening-plans)
 must survive pressure — agents find loopholes under time, sunk-cost, or authority pressure.
-Drafting an enforceable rule differs from drafting a guideline. The research backs this up:
-persuasion techniques more than double LLM compliance under pressure. See the [persuasion principles](references/persuasion-principles.md) for the seven principles, when each applies, and citations (Cialdini, 2021; Meincke et al., 2025).
+Drafting an enforceable rule differs from drafting a guideline. In one controlled study, persuasion cues more than doubled compliance for the tested model and prompts. See the [persuasion principles](references/persuasion-principles.md) for the seven principles, when each applies, the study's limits, and citations (Cialdini, 2021; Meincke et al., 2026).
 
 **Close every loophole explicitly.** State the rule, then forbid the specific workarounds you
 can predict — the agent will reach for the ambiguity under pressure.
