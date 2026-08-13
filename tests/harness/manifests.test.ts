@@ -53,6 +53,16 @@ function localMarkdownTargets(markdownPath: string): string[] {
     .filter((target): target is string => target !== undefined);
 }
 
+describe("repository tooling", () => {
+  test("Biome force-ignores eval-magic artifacts", () => {
+    const config = readJson("biome.json") as {
+      files?: { includes?: string[] };
+    };
+
+    expect(config.files?.includes).toContain("!!.eval-magic");
+  });
+});
+
 describe("shared assets (delivered by every harness)", () => {
   const bootstrap = fs.readFileSync(
     path.join(REPO_ROOT, "bootstrap.md"),
