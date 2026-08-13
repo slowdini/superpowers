@@ -62,17 +62,56 @@ Excuses for skipping an eval on a change you've already judged behavior-shaping.
 | "Pass rate was already 100%" | Then the assertion is too easy. Replace it. |
 | "I'll just call it deterministic" | Deterministic means the agent's compliance isn't in doubt — not that you'd rather not measure. If the wording could change a pressured choice, it's behavioral. Run the eval. |
 
+## Choosing agent and judge models
+
+Model selection defines the population the result describes. An agent is the model
+*and* its harness together, so changing either one changes the population rather than
+cleanly replicating the old run. Keep the model, harness, prompts, and run settings
+identical between comparison arms. The tier-selection rules below are prospective
+operating guidance: they help find signal, but do not establish transfer across tiers.
+
+Choose the agent-under-test from the claim:
+
+| Claim | Agent choice | What the result supports |
+|---|---|---|
+| Exploratory capability / Mode A discovery | Start with the lowest tier that can complete the task and leave gradeable artifacts | Whether the skill creates headroom-sensitive value on that tier and harness |
+| Target-tier behavior | Use the exact model and harness users will rely on | A claim about that target population |
+| Regression protection | Use each production population the suite is meant to protect | Whether established behavior still holds there |
+
+The discovery rule is **prospective guidance**, not a proven transfer law. Public
+guidance supports starting capability evals with a low pass rate and treating saturated
+evals as regression suites, but it does not show that an effect measured on a weaker
+model transfers to a stronger one. A weaker-tier discovery can justify a target-tier
+follow-up; it cannot substitute for one. See Anthropic's
+[agent-eval guidance](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+and METR's discussion of
+[agent ability and task difficulty](https://metr.org/blog/2025-07-14-how-does-time-horizon-vary-across-domains/).
+
+Read floors and ceilings before spending the full budget. On a floor, first check that
+the task is solvable and the grader is sound; then simplify the case or move up a tier.
+On a ceiling, preserve the case as a tier diagnostic and move down a tier or add
+realistic difficulty without changing the behavior under test. Never delete or rewrite
+a measured case merely to manufacture a delta.
+
+Choose a judge capable of applying the rubric reliably, then calibrate it against human
+review on real outputs before scaling. Use a balanced, capable judge by default; reserve
+the flagship tier for rubrics the default judge fails to grade reliably or for an
+explicit human choice. Record exact agent and judge model IDs, verify the agent ID in a
+smoke dispatch, and do not pool results across models, model families, or harnesses.
+OpenAI's [evaluation guidance](https://platform.openai.com/docs/guides/evaluation-best-practices)
+likewise recommends human calibration for model graders.
+
 ## Pre-flight gate (required)
 
-An eval run is not free. Each test case dispatches a fresh subagent **per condition** — an N-case suite is `2N` full agent sessions, plus a judge dispatch for every `llm_judge` assertion. That is real wall-clock time and real tokens, and a subagent under test can write outside its sandbox and pollute the real workspace. **Never kick off a run silently.**
+An eval run is not free. Each test case dispatches a fresh subagent **per condition** — an N-case suite is `2N` full agent sessions, plus a judge dispatch for every `llm_judge` assertion. A harness that cannot surface skill invocation also needs judge dispatches for the automatic invocation meta-check. That is real wall-clock time and real tokens, and a subagent under test can write outside its sandbox and pollute the real workspace. **Never kick off a run silently.**
 
 Before building the workspace and dispatching anything, STOP and present the user a run summary, then wait for explicit confirmation:
 
 - **Skill under test** — name and path
 - **Mode** — `new-skill` (with vs without) or `revision` (old vs new), plus the baseline label for revision mode
 - **Eval cases** — the count and a one-line list of the prompts (from `evals.json`)
-- **Models** — the model that will run each subagent under test, and the judge model for `llm_judge` assertions. The runner never dispatches these itself, so it can't observe them — state them explicitly so the user can correct a wrong choice before tokens are spent.
-- **Cost** — `2N` agent dispatches plus judge dispatches; call out that this is time- and token-intensive
+- **Models** — the exact agent-under-test and judge model IDs, the claim each choice supports, and whether a family or harness change limits comparison with prior runs. Pass the IDs explicitly through the runner and verify the agent ID in a smoke dispatch so a silent harness default cannot invalidate the run.
+- **Cost** — `2N` agent dispatches plus substantive and invocation-meta-check judge dispatches; call out that this is time- and token-intensive
 - **Sandbox** — the guard status (on Claude Code, arming the runner's `--guard` is the default; proceed unguarded only on an explicit opt-out, and warn that stray writes will then only be detected after the fact, never blocked)
 
 Do not dispatch until the user confirms *this summary*. An earlier "run the eval" is not confirmation — the summary may reveal a wrong mode, the wrong model, or a missing guard the user never intended. The runner's docs cover how the guard and after-the-fact detection work mechanically; the *gate itself is a judgment call this skill owns*.

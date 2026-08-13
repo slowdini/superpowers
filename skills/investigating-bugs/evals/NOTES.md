@@ -5,6 +5,10 @@ Durable run guidance for `evals.json`. (Per-baseline observations live in
 fixtures are meant to behave. Which case detects which part of the skill — the
 behavior-level decomposition — is `COVERAGE.md`.)
 
+For the Luna/Codex campaign, follow the frozen
+[pre-registration](baseline/PRE-REGISTRATION-LOWER-TIER.md) before building or
+dispatching the run.
+
 ## The dispatch environment MUST be pinned to a non-negative UTC offset
 
 Both timezone cases depend on the agent's own environment being `TZ=UTC` (or any
@@ -22,18 +26,28 @@ non-negative offset). The trap is that the naive reproduction comes back **green
 
 eval-magic has no UTC default — the agent process inherits the operator's
 environment (`env`/`matrix` on a `command_check` affect only the runner-owned check,
-not the dispatch). Pin it at the dispatch recipe by passing the tracked descriptor
-override to **every** command of the run:
+not the dispatch). Pin it at the dispatch recipe by passing the descriptor for the
+chosen harness to **every** command of the run:
 
 ```
+eval-magic <cmd> --harness-file skills/investigating-bugs/evals/harness/codex-utc.toml …
+# or, for Claude Code:
 eval-magic <cmd> --harness-file skills/investigating-bugs/evals/harness/claude-code-utc.toml …
 ```
 
-That descriptor also adds `--setting-sources project,local`, which unloads installed
-plugins so the `without_skill` arm is genuinely skill-free, and raises the dispatch
-permission mode (see below). See the comments in the file itself.
+The Codex descriptor pins `TZ=UTC`, disables live plugins and ambient memories for
+every agent turn, and declares live skill sources isolated because the known subject
+copies are plugin-provided. Inspect `plugin-shadow.json` before dispatch: abort if it
+finds a live subject copy from a source that `--disable plugins` does not cover. The
+transcript overlay also treats Codex's `aggregated_output` as command output; without
+that coalescing, a successful absolute-path read of the dispatch prompt can be
+rejected as an unread prompt. Staging, the write guard, permissions, model flags, and
+judge dispatch remain inherited from the built-in Codex descriptor. The Claude Code
+descriptor also unloads installed plugins so the `without_skill` arm is genuinely
+skill-free and raises the dispatch permission mode (see below). Read the comments in
+the selected file before running it.
 
-## The agent must actually be able to RUN things
+## The Claude Code agent must actually be able to RUN things
 
 eval-magic's built-in Claude Code recipe dispatches with `--permission-mode
 acceptEdits`. That auto-approves file edits but **not** Bash, and because the recipe
@@ -59,6 +73,12 @@ If you re-derive these recipes, keep that property — check that a dispatch can
 blocks it. Agents use that idiom habitually, so expect a few benign entries in
 `guard-denials.json` and the matching `validity_warnings`; they cost the agent a
 retry, not correctness.
+
+The built-in Codex descriptor already dispatches with non-interactive execution and
+the guard as the boundary, so `codex-utc.toml` must not copy the Claude Code permission
+workaround. Before a Codex fleet, use the smoke dispatch to confirm both sides of the
+contract: `bun` runs inside the task environment and an out-of-environment write is
+blocked.
 
 Verify the fixtures before a run:
 
