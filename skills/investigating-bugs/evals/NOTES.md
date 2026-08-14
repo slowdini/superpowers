@@ -5,9 +5,9 @@ Durable run guidance for `evals.json`. (Per-baseline observations live in
 fixtures are meant to behave. Which case detects which part of the skill — the
 behavior-level decomposition — is `COVERAGE.md`.)
 
-For the Luna/Codex campaign, follow the frozen
-[pre-registration](baseline/PRE-REGISTRATION-LOWER-TIER.md) before building or
-dispatching the run.
+The Luna/Codex campaign has run; its frozen
+[pre-registration](baseline/PRE-REGISTRATION-LOWER-TIER.md) records that run's scope
+and constraints. Read it before quoting or re-running it.
 
 ## The dispatch environment MUST be pinned to a non-negative UTC offset
 

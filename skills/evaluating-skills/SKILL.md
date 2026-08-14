@@ -62,43 +62,18 @@ Excuses for skipping an eval on a change you've already judged behavior-shaping.
 | "Pass rate was already 100%" | Then the assertion is too easy. Replace it. |
 | "I'll just call it deterministic" | Deterministic means the agent's compliance isn't in doubt — not that you'd rather not measure. If the wording could change a pressured choice, it's behavioral. Run the eval. |
 
-## Choosing agent and judge models
+## Models, harnesses, and populations
 
 Model selection defines the population the result describes. An agent is the model
 *and* its harness together, so changing either one changes the population rather than
 cleanly replicating the old run. Keep the model, harness, prompts, and run settings
-identical between comparison arms. The tier-selection rules below are prospective
-operating guidance: they help find signal, but do not establish transfer across tiers.
-
-Choose the agent-under-test from the claim:
-
-| Claim | Agent choice | What the result supports |
-|---|---|---|
-| Exploratory capability / Mode A discovery | Start with the lowest tier that can complete the task and leave gradeable artifacts | Whether the skill creates headroom-sensitive value on that tier and harness |
-| Target-tier behavior | Use the exact model and harness users will rely on | A claim about that target population |
-| Regression protection | Use each production population the suite is meant to protect | Whether established behavior still holds there |
-
-The discovery rule is **prospective guidance**, not a proven transfer law. Public
-guidance supports starting capability evals with a low pass rate and treating saturated
-evals as regression suites, but it does not show that an effect measured on a weaker
-model transfers to a stronger one. A weaker-tier discovery can justify a target-tier
-follow-up; it cannot substitute for one. See Anthropic's
-[agent-eval guidance](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
-and METR's discussion of
-[agent ability and task difficulty](https://metr.org/blog/2025-07-14-how-does-time-horizon-vary-across-domains/).
-
-Read floors and ceilings before spending the full budget. On a floor, first check that
-the task is solvable and the grader is sound; then simplify the case or move up a tier.
-On a ceiling, preserve the case as a tier diagnostic and move down a tier or add
-realistic difficulty without changing the behavior under test. Never delete or rewrite
-a measured case merely to manufacture a delta.
+identical between comparison arms, and measure on the population the claim is about.
 
 Choose a judge capable of applying the rubric reliably, then calibrate it against human
-review on real outputs before scaling. Use a balanced, capable judge by default; reserve
-the flagship tier for rubrics the default judge fails to grade reliably or for an
-explicit human choice. Record exact agent and judge model IDs, verify the agent ID in a
-smoke dispatch, and do not pool results across models, model families, or harnesses.
-OpenAI's [evaluation guidance](https://platform.openai.com/docs/guides/evaluation-best-practices)
+review on real outputs before scaling. Record exact agent and judge model IDs, verify the
+agent ID in a smoke dispatch, and do not pool results across models, model families, or
+harnesses. OpenAI's
+[evaluation guidance](https://platform.openai.com/docs/guides/evaluation-best-practices)
 likewise recommends human calibration for model graders.
 
 ## Pre-flight gate (required)
@@ -110,7 +85,7 @@ Before building the workspace and dispatching anything, STOP and present the use
 - **Skill under test** — name and path
 - **Mode** — `new-skill` (with vs without) or `revision` (old vs new), plus the baseline label for revision mode
 - **Eval cases** — the count and a one-line list of the prompts (from `evals.json`)
-- **Models** — the exact agent-under-test and judge model IDs, the claim each choice supports, and whether a family or harness change limits comparison with prior runs. Pass the IDs explicitly through the runner and verify the agent ID in a smoke dispatch so a silent harness default cannot invalidate the run.
+- **Models** — the exact agent-under-test and judge model IDs, the population each describes, and whether a family or harness change limits comparison with prior runs. Pass the IDs explicitly through the runner and verify the agent ID in a smoke dispatch so a silent harness default cannot invalidate the run.
 - **Cost** — `2N` agent dispatches plus substantive and invocation-meta-check judge dispatches; call out that this is time- and token-intensive
 - **Sandbox** — the guard status (on Claude Code, arming the runner's `--guard` is the default; proceed unguarded only on an explicit opt-out, and warn that stray writes will then only be detected after the fact, never blocked)
 
@@ -259,7 +234,7 @@ Once a run is graded and aggregated, the headline is the **delta**: what the ski
 - **Tighten instructions when results are inconsistent.** High stddev = ambiguous instructions or model variability.
 - **Read time/token outliers.** If one run is 3× longer, read its transcript for the bottleneck.
 
-**A ceiling has two causes — tell them apart.** Both arms passing can mean the case's behavior is base-model native at this tier, or the eval is too easy. Disambiguate two ways: check whether the unskilled arm *ever* takes the decoy across runs, and verify each "passing" fix against a held-out matrix (other timezones, other inputs) rather than the reported repro alone. If the unskilled arm reaches the full correct answer unprompted, the ceiling is real — a **null ablation**: the skill doesn't change *that behavior* at this tier. Record it in the coverage map and keep the case as a diagnostic (deleting a case because it stopped flattering the skill is how a suite gets tuned into agreement); a weaker tier or another harness may still need the behavior. If *no* behavior in the map survives, the skill has nothing measurable at this tier and the Iron Law says don't ship — a legitimate, documented finding, not a failure to measure. If neither arm was ever tempted, the trap wasn't attractive — redesign it (see *Engineering an attractive failure*) before concluding anything. Lowering the model tier sharpens the distinction.
+**A ceiling has two causes — tell them apart.** Both arms passing can mean the case's behavior is base-model native at this tier, or the eval is too easy. Disambiguate two ways: check whether the unskilled arm *ever* takes the decoy across runs, and verify each "passing" fix against a held-out matrix (other timezones, other inputs) rather than the reported repro alone. If the unskilled arm reaches the full correct answer unprompted, the ceiling is real — a **null ablation**: the skill doesn't change *that behavior* at this tier. Record it in the coverage map and keep the case as a diagnostic (deleting a case because it stopped flattering the skill is how a suite gets tuned into agreement); a weaker tier or another harness may still need the behavior. If *no* behavior in the map survives, the skill has nothing measurable at this tier and the Iron Law says don't ship — a legitimate, documented finding, not a failure to measure. If neither arm was ever tempted, the trap wasn't attractive — redesign it (see *Engineering an attractive failure*) before concluding anything.
 
 **Human review** catches what assertions don't — outputs that are technically correct but miss the point. Keep per-eval reviewer notes; an empty note means the output looked fine. Focus the next iteration on the cases you had specific complaints about.
 
